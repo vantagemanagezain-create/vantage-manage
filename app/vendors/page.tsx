@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, MessageCircle, MapPin, Search, Store } from 'lucide-react';
+import { Phone, MessageCircle, MapPin, Search, Store, CheckCircle } from 'lucide-react';
 
 type Vendor = {
   id: string;
@@ -15,6 +15,9 @@ type Vendor = {
   whatsapp_number: string;
   area: string;
   active: boolean;
+  subscription_status: string;
+  subscription_plan: string;
+  subscription_end: string | null;
   categories?: { name: string };
 };
 
@@ -41,12 +44,14 @@ function VendorsContent() {
 
   async function fetchVendors() {
     setLoading(true);
+    const now = new Date().toISOString();
     const { data } = await supabase
       .from('vendors')
-      .select('*, categories(name)')
+      .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, active, subscription_status, subscription_plan, subscription_end, categories(name)')
       .eq('active', true)
+      .eq('subscription_status', 'active')
+      .or(`subscription_end.is.null,subscription_end.gt.${now}`)
       .order('created_at', { ascending: false });
-
     if (data) {
       // @ts-ignore
       setVendors(data);
@@ -93,7 +98,6 @@ function VendorsContent() {
           <Link href="/admin" className="text-sm font-medium text-gray-600">Admin</Link>
         </div>
       </header>
-
       <main className="max-w-xl mx-auto p-4">
         <form onSubmit={handleSearch} className="relative mb-6">
           <Search className="absolute left-3 top-3 text-gray-400" size={18} />
@@ -109,7 +113,6 @@ function VendorsContent() {
           />
           <button type="submit" className="hidden">Search</button>
         </form>
-
         {(searchParams.get('category') || searchParams.get('search')) && (
           <div className="flex items-center gap-2 mb-4 text-xs">
             <span className="text-gray-500">Filtering by:</span>
@@ -118,42 +121,48 @@ function VendorsContent() {
             <Link href="/vendors" className="text-gray-400 underline">Clear</Link>
           </div>
         )}
-
         <div className="text-sm text-gray-500 mb-4">
-          {loading ? 'Loading...' : `${filtered.length} vendor${filtered.length !== 1 ? 's' : ''} found`}
+          {loading ? 'Loading...' : `${filtered.length} verified vendor${filtered.length !== 1 ? 's' : ''} found`}
         </div>
-
         {loading ? (
           <div className="text-center py-10 text-gray-500">Loading vendors...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
-            No vendors found. Try a different search.
+            No verified vendors found. Try a different search.
             <br />
             <Link href="/vendors" className="text-blue-600 underline text-sm mt-2 block">View all vendors</Link>
           </div>
         ) : (
           <div className="grid gap-4">
             {filtered.map((vendor) => (
-              <div key={vendor.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="font-bold text-gray-900">{vendor.vendor_name}</h3>
-                <p className="text-xs text-gray-500 mb-1">{vendor.categories?.name}</p>
-                <div className="flex items-center gap-1 text-xs text-gray-400 mb-4">
-                  <MapPin size={12} /> {vendor.area}
+              <Link key={vendor.id} href={`/vendors/${vendor.slug}`} className="block">
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-900">{vendor.vendor_name}</h3>
+                      <p className="text-xs text-gray-500 mb-1">{vendor.categories?.name}</p>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      <CheckCircle size={10} /> Verified
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gray-400 mb-4">
+                    <MapPin size={12} /> {vendor.area}
+                  </div>
+                  <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
+                    <a href={`tel:${vendor.mobile_number}`} className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-xs py-1.5 rounded-lg hover:bg-blue-700">
+                      <Phone size={14} /> Call
+                    </a>
+                    <a href={`https://wa.me/${vendor.whatsapp_number}`} className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600">
+                      <MessageCircle size={14} /> WhatsApp
+                    </a>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <a href={`tel:${vendor.mobile_number}`} className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-xs py-1.5 rounded-lg hover:bg-blue-700">
-                    <Phone size={14} /> Call
-                  </a>
-                  <a href={`https://wa.me/${vendor.whatsapp_number}`} className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600">
-                    <MessageCircle size={14} /> WhatsApp
-                  </a>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </main>
-
       <footer className="text-center text-xs text-gray-400 py-8">
         Moradabad Business Directory
       </footer>
