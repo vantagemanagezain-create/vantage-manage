@@ -155,7 +155,7 @@ export default function NewVendorPage() {
                 type="text"
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -168,7 +168,7 @@ export default function NewVendorPage() {
                 type="text"
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -180,7 +180,7 @@ export default function NewVendorPage() {
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
                 <option value="">Select a category</option>
@@ -200,7 +200,7 @@ export default function NewVendorPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -212,7 +212,7 @@ export default function NewVendorPage() {
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -225,7 +225,7 @@ export default function NewVendorPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -237,7 +237,7 @@ export default function NewVendorPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function NewVendorPage() {
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 placeholder="https://"
-                className="w-full px-4 py-2 border border-gray-300 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
