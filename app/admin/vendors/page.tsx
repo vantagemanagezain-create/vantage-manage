@@ -57,7 +57,7 @@ export default function VendorsPage() {
       )
       .order('vendor_name');
 
-    setVendors(data || []);
+    setVendors((data as Vendor[]) || []);
     setLoading(false);
   };
 
