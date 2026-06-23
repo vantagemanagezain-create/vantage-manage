@@ -53,7 +53,7 @@ export default function VendorsPage() {
     const { data } = await supabase
       .from('vendors')
       .select(
-        'id, vendor_name, slug, owner_name, mobile_number, active, profile_image, category_id, categories(name)'
+        'id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, active, profile_image, category_id, categories(name)'
       )
       .order('vendor_name');
 
