@@ -290,8 +290,7 @@ export default function NewVendorPage() {
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Logo
-                  </label>
-                </div>
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-900 cursor-pointer hover:bg-gray-50"                </div>
               )}
             </div>
 
@@ -323,8 +322,7 @@ export default function NewVendorPage() {
               >
                 Cancel
               </Link>
-            </div>
-          </form>
+                className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50"          </form>
         </div>
       </div>
     </div>
