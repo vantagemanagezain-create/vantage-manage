@@ -126,6 +126,7 @@ export default function NewVendorPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+        }
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-6">
           <Link
@@ -318,11 +319,11 @@ export default function NewVendorPage() {
               </button>
               <Link
                 href="/admin/vendors"
-                className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg ho text-gray-900
               >
                 Cancel
               </Link>
-                className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50"          </form>
+                className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg text-gray-900 hov text-gray-900er:bg-gray-50"          </form>
         </div>
       </div>
     </div>
