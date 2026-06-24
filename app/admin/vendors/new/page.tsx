@@ -26,11 +26,11 @@ export default function NewVendorPage() {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [description, setDescription] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [website, setWebsite] = useState('');
+  const [area, setArea] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -84,7 +84,7 @@ export default function NewVendorPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !slug.trim() || !categoryId) {
-      setError('Name, slug, and category are required.');
+      setError('Business name, slug, and category are required.');
       return;
     }
     setLoading(true);
@@ -95,12 +95,12 @@ export default function NewVendorPage() {
       .insert({
         vendor_name: name.trim(),
         slug: slug.trim(),
-        category: categoryId,
+        category_id: categoryId,
+        owner_name: ownerName.trim(),
         description: description.trim() || null,
-        area: address.trim() || null,
-        mobile_number: phone.trim() || null,
-        whatsapp_number: phone.trim() || null,
-        owner_name: '',
+        area: area.trim() || null,
+        mobile_number: mobileNumber.trim() || null,
+        whatsapp_number: whatsappNumber.trim() || mobileNumber.trim() || null,
         active: isActive,
       })
       .select()
@@ -144,6 +144,7 @@ export default function NewVendorPage() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
             <input
@@ -164,6 +165,7 @@ export default function NewVendorPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
+            <p className="text-xs text-gray-400 mt-1">Auto-generated from name. Used in URL.</p>
           </div>
 
           <div>
@@ -176,9 +178,19 @@ export default function NewVendorPage() {
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+            <input
+              type="text"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
 
           <div>
@@ -186,7 +198,7 @@ export default function NewVendorPage() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={4}
+              rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -195,28 +207,30 @@ export default function NewVendorPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Area / Address</label>
             <input
               type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone / WhatsApp</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
               <input
                 type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="+91..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
               <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="tel"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="Same as mobile if blank"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -284,6 +298,7 @@ export default function NewVendorPage() {
               Cancel
             </Link>
           </div>
+
         </form>
       </div>
     </div>
