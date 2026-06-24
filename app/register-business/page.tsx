@@ -37,7 +37,15 @@ export default function RegisterBusinessPage() {
         email: formData.email,
         password: formData.password,
       });
-      if (authError) throw authError;
+
+      if (authError) {
+        if (authError.message?.toLowerCase().includes('rate limit')) {
+          setError('Bahut zyada attempts ho gaye. Please 5-10 minute wait karke dobara try karein.');
+          setLoading(false);
+          return;
+        }
+        throw authError;
+      }
 
       // Step 2: Create vendor record with pending subscription
       const slug = formData.vendor_name
@@ -65,12 +73,17 @@ export default function RegisterBusinessPage() {
         active: false,
         user_id: authData.user?.id,
       });
+
       if (insertError) throw insertError;
 
       // Success - redirect to dashboard
       router.push('/dashboard?registered=true');
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      if (err?.message?.toLowerCase().includes('rate limit')) {
+        setError('Bahut zyada attempts ho gaye. Please 5-10 minute wait karke dobara try karein.');
+      } else {
+        setError(err.message || 'Registration failed. Please try again.');
+      }
       setLoading(false);
     }
   };
