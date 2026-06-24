@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -24,20 +23,20 @@ export default function RegisterBusinessPage() {
     state: 'Uttar Pradesh',
     description: '',
     category_id: '',
+    subcategory_id: '',
+    city_id: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       // Step 1: Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
-
       if (authError) throw authError;
 
       // Step 2: Create vendor record with pending subscription
@@ -58,13 +57,14 @@ export default function RegisterBusinessPage() {
         state: formData.state,
         description: formData.description,
         category_id: formData.category_id || null,
+        subcategory_id: formData.subcategory_id || null,
+        city_id: formData.city_id || null,
         subscription_status: 'pending',
         payment_status: 'unpaid',
         subscription_plan: 'basic',
         active: false,
         user_id: authData.user?.id,
       });
-
       if (insertError) throw insertError;
 
       // Success - redirect to dashboard
@@ -76,41 +76,35 @@ export default function RegisterBusinessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-lg">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} /> Back to Home
+        <div className="mb-8 text-center">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
           </Link>
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-              <Store className="text-white" size={24} />
-            </div>
-            <h1 className="text-3xl font-bold text-white">Vantage Manage</h1>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Store className="w-8 h-8 text-blue-500" />
+            <h1 className="text-2xl font-bold">Vantage Manage</h1>
           </div>
-          <p className="text-gray-400">Register your business on Moradabad Business Directory</p>
+          <p className="text-gray-400 text-sm">Register your business on Moradabad Business Directory</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white mb-6">Register Your Business</h2>
+        <div className="bg-gray-900 rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-5">Register Your Business</h2>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-4 mb-6 text-sm">
+            <div className="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-4">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Business Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Business Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Business Name *</label>
               <input
                 type="text"
                 required
@@ -123,9 +117,7 @@ export default function RegisterBusinessPage() {
 
             {/* Owner Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Owner Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Owner Name *</label>
               <input
                 type="text"
                 required
@@ -137,7 +129,7 @@ export default function RegisterBusinessPage() {
             </div>
 
             {/* Email & Password */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
                 <input
@@ -164,11 +156,9 @@ export default function RegisterBusinessPage() {
             </div>
 
             {/* Mobile & WhatsApp */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Mobile Number *
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Mobile Number *</label>
                 <input
                   type="tel"
                   required
@@ -179,9 +169,7 @@ export default function RegisterBusinessPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  WhatsApp Number
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">WhatsApp Number</label>
                 <input
                   type="tel"
                   value={formData.whatsapp_number}
@@ -219,9 +207,7 @@ export default function RegisterBusinessPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Business Description
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Business Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -241,11 +227,9 @@ export default function RegisterBusinessPage() {
             </button>
 
             {/* Login Link */}
-            <p className="text-center text-sm text-gray-400 mt-4">
+            <p className="text-center text-sm text-gray-400">
               Already have an account?{' '}
-              <Link href="/login" className="text-blue-400 hover:underline">
-                Login here
-              </Link>
+              <Link href="/login" className="text-blue-400 hover:underline">Login here</Link>
             </p>
           </form>
         </div>
