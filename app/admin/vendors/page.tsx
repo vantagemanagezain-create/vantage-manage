@@ -1,5 +1,6 @@
 'use client';
 // Trigger fresh build - vendor_name field fix verified
+// Vercel cache clear
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
