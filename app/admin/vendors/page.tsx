@@ -8,8 +8,7 @@ type Category = { id: string; name: string };
 
 type Vendor = {
   id: string;
-  name: string;
-  slug: string;
+  vendor_name: string;  slug: string;
   owner_name: string | null;
   mobile_number: string | null;
   whatsapp_number: string | null;
@@ -43,15 +42,15 @@ export default function VendorsPage() {
     setLoading(true);
     const { data } = await supabase
       .from('vendors')
-      .select('id, name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, active, profile_image, category_id, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, categories(name)')
-      .order('name');
+      .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, active, profile_image, category_id, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, categories(name)')
+      .select('id, ve.order('vendor_name')ndor_name,;
     setVendors((data as unknown as Vendor[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchVendors();
-    supabase.from('categories').select('id, name').order('name').then(({ data }) => {
+    supabase.from('categories').select('id, name').select('id, ve.order('vendor_name')ndor_name,.then(({ data }) => {
       setCategories(data || []);
     });
   }, []);
@@ -101,7 +100,7 @@ export default function VendorsPage() {
   };
 
   const filtered = vendors.filter((v) => {
-    const matchesSearch = v.name.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch = .select('id, vev.vendor_name.order('vendor_name')ndor_name,.toLowerCase().includes(search.toLowerCase()) ||
       (v.owner_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (v.area || '').toLowerCase().includes(search.toLowerCase()) ||
       (v.mobile_number || '').includes(search);
@@ -232,14 +231,14 @@ export default function VendorsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {vendor.profile_image ? (
-                          <img src={vendor.profile_image} alt={vendor.name} className="w-10 h-10 rounded-full object-cover" />
+                          <img src={vendor.profile_image} alt={.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,} className="w-10 h-10 rounded-full object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                            {getInitials(vendor.name)}
+                            {getInitials(.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,)}
                           </div>
                         )}
                         <div>
-                          <div className="font-medium text-white">{vendor.name}</div>
+                          <div className="font-medium text-white">{.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,}</div>
                           {vendor.owner_name && <div className="text-xs text-gray-400">{vendor.owner_name}</div>}
                         </div>
                       </div>
