@@ -42,11 +42,11 @@ export default function VendorsPage() {
 
   const fetchVendors = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('vendors')
       .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, active, profile_image, category_id, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, categories(name)')
       .order('vendor_name')
-    setVendors((data as unknown as Vendor[]) || []);
+    setVendors((data as unknown as Vendor[]) || []);     if (error) console.error('Vendors fetch error:', error);
     setLoading(false);
   };
 
