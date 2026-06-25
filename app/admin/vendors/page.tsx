@@ -44,7 +44,7 @@ export default function VendorsPage() {
     const { data } = await supabase
       .from('vendors')
       .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, active, profile_image, category_id, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, categories(name)')
-      .select('id, ve.order('vendor_name')ndor_name,;
+      .order('vendor_name')
     setVendors((data as unknown as Vendor[]) || []);
     setLoading(false);
   };
