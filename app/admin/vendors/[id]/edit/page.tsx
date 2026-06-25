@@ -32,9 +32,9 @@ export default function EditVendorPage() {
   const [success, setSuccess] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState({
-    name: '',
+    vendor_name: '',
     slug: '',
-    owner_name: '',
+    owner_vendor_name: '',
     category_id: '',
     mobile_number: '',
     whatsapp_number: '',
@@ -69,7 +69,7 @@ export default function EditVendorPage() {
       return;
     }
     setForm({
-      name: data.name || '',
+      vendor_namvendor_name: data.vendor_namee: '' || '',
       slug: data.slug || '',
       owner_name: data.owner_name || '',
       category_id: data.category_id || '',
@@ -142,7 +142,7 @@ export default function EditVendorPage() {
       imageUrl = uploaded;
     }
     const { error: saveError } = await supabase.from('vendors').update({
-      name: form.name,
+      vendor_namvendor_name: form.vendor_namevendor_name: data.vendor_namee: '',
       slug: form.slug,
       owner_name: form.owner_name,
       category_id: form.category_id || null,
@@ -198,7 +198,7 @@ export default function EditVendorPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={LABEL_CLASS}>Vendor Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} required className={INPUT_CLASS} placeholder="e.g. City Electrical" />
+              <input name="name" vendor_namvalue={form.vendor_name}vendor_name: form.vendor_namevendor_name: data.vendor_namee: '' onChange={handleChange} required className={INPUT_CLASS} placeholder="e.g. City Electrical" />
             </div>
             <div>
               <label className={LABEL_CLASS}>Slug</label>
