@@ -34,7 +34,7 @@ export default function EditVendorPage() {
   const [form, setForm] = useState({
     vendor_name: '',
     slug: '',
-    owner_vendor_name: '',
+    owner_name: '',
     category_id: '',
     mobile_number: '',
     whatsapp_number: '',
@@ -42,7 +42,6 @@ export default function EditVendorPage() {
     address: '',
     state: '',
     description: '',
-    active: true,
     profile_image: '',
     city_id: MORADABAD_CITY_ID,
   });
@@ -62,14 +61,15 @@ export default function EditVendorPage() {
 
   async function fetchVendor() {
     setLoading(true);
-    const { data, error } = await supabase.from('vendors').select('*').eq('id', id).single();
-    if (error || !data) {
+    const { data, error: fetchError } = await supabase.from('vendors').select('*').eq('id', id).single();
+    if (fetchError || !data) {
+      console.error('fetchVendor error:', fetchError);
       setError('Vendor not found');
       setLoading(false);
       return;
     }
     setForm({
-      vendor_namvendor_name: data.vendor_namee: '' || '',
+      vendor_name: data.vendor_name || '',
       slug: data.slug || '',
       owner_name: data.owner_name || '',
       category_id: data.category_id || '',
@@ -79,7 +79,6 @@ export default function EditVendorPage() {
       address: data.address || '',
       state: data.state || '',
       description: data.description || '',
-      active: data.active ?? true,
       profile_image: data.profile_image || '',
       city_id: data.city_id || MORADABAD_CITY_ID,
     });
@@ -88,12 +87,11 @@ export default function EditVendorPage() {
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-      ...(name === 'name' ? { slug: slugify(value) } : {}),
+      [name]: value,
+      ...(name === 'vendor_name' ? { slug: slugify(value) } : {}),
     }));
   }
 
@@ -109,9 +107,12 @@ export default function EditVendorPage() {
     setUploadingImage(true);
     const ext = imageFile.name.split('.').pop();
     const fileName = `vendor-${id}-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from('vendor-images').upload(fileName, imageFile, { upsert: true });
+    const { error: uploadError } = await supabase.storage
+      .from('vendor-images')
+      .upload(fileName, imageFile, { upsert: true });
     setUploadingImage(false);
     if (uploadError) {
+      console.error('uploadImage error:', uploadError);
       setError('Image upload failed: ' + uploadError.message);
       return null;
     }
@@ -138,11 +139,14 @@ export default function EditVendorPage() {
     let imageUrl = form.profile_image;
     if (imageFile) {
       const uploaded = await uploadImage();
-      if (!uploaded) { setSaving(false); return; }
+      if (!uploaded) {
+        setSaving(false);
+        return;
+      }
       imageUrl = uploaded;
     }
     const { error: saveError } = await supabase.from('vendors').update({
-      vendor_namvendor_name: form.vendor_namevendor_name: data.vendor_namee: '',
+      vendor_name: form.vendor_name,
       slug: form.slug,
       owner_name: form.owner_name,
       category_id: form.category_id || null,
@@ -152,12 +156,12 @@ export default function EditVendorPage() {
       address: form.address,
       state: form.state,
       description: form.description,
-      active: form.active,
       profile_image: imageUrl,
       city_id: MORADABAD_CITY_ID,
     }).eq('id', id);
     setSaving(false);
     if (saveError) {
+      console.error('handleSubmit saveError:', saveError);
       setError('Save failed: ' + saveError.message);
     } else {
       setSuccess('Vendor updated successfully!');
@@ -168,49 +172,45 @@ export default function EditVendorPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="text-white text-lg">Loading vendor...</div>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <p className="text-gray-400">Loading vendor...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-900 text-white">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/admin/vendors" className="text-gray-400 hover:text-white transition-colors">
+          <Link href="/admin/vendors" className="text-gray-400 hover:text-white">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Edit Vendor</h1>
+          <h1 className="text-2xl font-bold">Edit Vendor</h1>
         </div>
 
         {error && (
-          <div className="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded mb-4">
+          <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded mb-4">
+          <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded mb-4">
             {success}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL_CLASS}>Vendor Name *</label>
-              <input name="name" vendor_namvalue={form.vendor_name}vendor_name: form.vendor_namevendor_name: data.vendor_namee: '' onChange={handleChange} required className={INPUT_CLASS} placeholder="e.g. City Electrical" />
-            </div>
-            <div>
-              <label className={LABEL_CLASS}>Slug</label>
-              <input name="slug" value={form.slug} onChange={handleChange} className={`${INPUT_CLASS} text-gray-400`} placeholder="auto-generated" />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={LABEL_CLASS}>Vendor Name *</label>
+            <input name="vendor_name" value={form.vendor_name} onChange={handleChange} required className={INPUT_CLASS} placeholder="e.g. City Electrical" />
           </div>
-
+          <div>
+            <label className={LABEL_CLASS}>Slug</label>
+            <input name="slug" value={form.slug} onChange={handleChange} className={`${INPUT_CLASS} text-gray-400`} placeholder="auto-generated" />
+          </div>
           <div>
             <label className={LABEL_CLASS}>Owner Name</label>
             <input name="owner_name" value={form.owner_name} onChange={handleChange} className={INPUT_CLASS} placeholder="Owner full name" />
           </div>
-
           <div>
             <label className={LABEL_CLASS}>Category</label>
             <select name="category_id" value={form.category_id} onChange={handleChange} className={INPUT_CLASS}>
@@ -220,44 +220,30 @@ export default function EditVendorPage() {
               ))}
             </select>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL_CLASS}>Mobile Number</label>
-              <input name="mobile_number" value={form.mobile_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
-            </div>
-            <div>
-              <label className={LABEL_CLASS}>WhatsApp Number</label>
-              <input name="whatsapp_number" value={form.whatsapp_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
-            </div>
+          <div>
+            <label className={LABEL_CLASS}>Mobile Number</label>
+            <input name="mobile_number" value={form.mobile_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL_CLASS}>Area</label>
-              <input name="area" value={form.area} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Cantonment" />
-            </div>
-            <div>
-              <label className={LABEL_CLASS}>State</label>
-              <input name="state" value={form.state} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Uttar Pradesh" />
-            </div>
+          <div>
+            <label className={LABEL_CLASS}>WhatsApp Number</label>
+            <input name="whatsapp_number" value={form.whatsapp_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
           </div>
-
+          <div>
+            <label className={LABEL_CLASS}>Area</label>
+            <input name="area" value={form.area} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Cantonment" />
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>State</label>
+            <input name="state" value={form.state} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Uttar Pradesh" />
+          </div>
           <div>
             <label className={LABEL_CLASS}>Address</label>
             <input name="address" value={form.address} onChange={handleChange} className={INPUT_CLASS} placeholder="Full address" />
           </div>
-
           <div>
             <label className={LABEL_CLASS}>Description</label>
             <textarea name="description" value={form.description} onChange={handleChange} rows={3} className={INPUT_CLASS} placeholder="Brief description of services" />
           </div>
-
-          <div className="flex items-center gap-3">
-            <input type="checkbox" name="active" id="active" checked={form.active} onChange={handleChange} className="w-4 h-4 accent-blue-500" />
-            <label htmlFor="active" className="text-sm font-medium text-gray-300">Active</label>
-          </div>
-
           <div>
             <label className={LABEL_CLASS}>Vendor Logo</label>
             {imagePreview ? (
@@ -279,7 +265,6 @@ export default function EditVendorPage() {
             )}
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
           </div>
-
           <div className="pt-2">
             <button type="submit" disabled={saving || uploadingImage} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium disabled:opacity-50 transition-colors">
               <Save size={16} />
