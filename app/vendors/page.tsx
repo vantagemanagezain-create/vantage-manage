@@ -14,7 +14,7 @@ type Vendor = {
   mobile_number: string;
   whatsapp_number: string;
   area: string;
-  active: boolean;
+
   subscription_status: string;
   subscription_plan: string;
   subscription_end: string | null;
@@ -47,8 +47,8 @@ function VendorsContent() {
     const now = new Date().toISOString();
     const { data } = await supabase
       .from('vendors')
-      .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, active, subscription_status, subscription_plan, subscription_end, categories(name)')
-      .eq('active', true)
+      .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, subscription_status, subscription_plan, subscription_end, categories(name)')
+      
       .eq('subscription_status', 'active')
       .or(`subscription_end.is.null,subscription_end.gt.${now}`)
       .order('created_at', { ascending: false });
