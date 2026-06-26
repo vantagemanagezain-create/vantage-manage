@@ -6,11 +6,6 @@ export async function middleware(request: NextRequest) {
 
   // Admin routes protect karo
   if (pathname.startsWith('/admin')) {
-    // /admin/login ko exempt karo
-    if (pathname === '/admin/login') {
-      return NextResponse.next();
-    }
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -32,7 +27,8 @@ export async function middleware(request: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-      const loginUrl = new URL('/admin/login', request.url);
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
