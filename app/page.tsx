@@ -14,7 +14,7 @@ type Vendor = {
   area: string;
   category: string;
   description: string;
-  active: boolean;
+  
 };
 
 type Category = {
@@ -40,7 +40,7 @@ export default function HomePage() {
     const { data } = await supabase
       .from('vendors')
       .select('*')
-      .eq('active', true)
+      
       .order('created_at', { ascending: false })
       .limit(6);
     if (data) setVendors(data);
@@ -59,7 +59,7 @@ export default function HomePage() {
     const { count } = await supabase
       .from('vendors')
       .select('*', { count: 'exact', head: true })
-      .eq('active', true);
+      ;
     if (count !== null) setTotalCount(count);
   }
 
