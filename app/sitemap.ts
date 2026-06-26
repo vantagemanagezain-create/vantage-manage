@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: vendors } = await supabase
     .from('vendors')
     .select('slug, updated_at')
-    .eq('active', true);
+    
 
   const { data: categories } = await supabase
     .from('categories')
