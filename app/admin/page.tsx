@@ -5,7 +5,8 @@ import { Users, Store, Tag, TrendingUp } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    vendors: 0,
+    totalVendors: 0,
+    activeVendors: 0,
     categories: 0,
     users: 0,
   });
@@ -16,15 +17,18 @@ export default function AdminDashboard() {
       const supabase = createClient();
       const [
         { count: vendorsCount },
+        { count: activeCount },
         { count: categoriesCount },
         { count: usersCount },
       ] = await Promise.all([
         supabase.from('vendors').select('*', { count: 'exact', head: true }),
+        supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('subscription_status', 'active'),
         supabase.from('categories').select('*', { count: 'exact', head: true }),
         supabase.from('users').select('*', { count: 'exact', head: true }),
       ]);
       setStats({
-        vendors: vendorsCount || 0,
+        totalVendors: vendorsCount || 0,
+        activeVendors: activeCount || 0,
         categories: categoriesCount || 0,
         users: usersCount || 0,
       });
@@ -36,7 +40,7 @@ export default function AdminDashboard() {
   const cards = [
     {
       label: 'Total Vendors',
-      value: stats.vendors,
+      value: stats.totalVendors,
       icon: Store,
       color: 'text-blue-400',
     },
@@ -53,8 +57,8 @@ export default function AdminDashboard() {
       color: 'text-purple-400',
     },
     {
-      label: 'Active',
-      value: stats.vendors,
+      label: 'Active Vendors',
+      value: stats.activeVendors,
       icon: TrendingUp,
       color: 'text-yellow-400',
     },

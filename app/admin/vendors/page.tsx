@@ -1,16 +1,15 @@
 'use client';
-// Trigger fresh build - vendor_name field fix verified
-// Vercel cache clear
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { Plus, Search, Pencil, Trash2, Eye, MessageCircle, CheckCircle, Clock, XCircle, Calendar, Timer } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, MessageCircle, CheckCircle, Clock, XCircle, Timer } from 'lucide-react';
 
 type Category = { id: string; name: string };
 
 type Vendor = {
   id: string;
-  vendor_name: string;  slug: string;
+  vendor_name: string;
+  slug: string;
   owner_name: string | null;
   mobile_number: string | null;
   whatsapp_number: string | null;
@@ -19,7 +18,6 @@ type Vendor = {
   state: string | null;
   description: string | null;
   category_id: string | null;
-
   profile_image: string | null;
   subscription_status: string;
   subscription_plan: string;
@@ -45,14 +43,15 @@ export default function VendorsPage() {
     const { data, error } = await supabase
       .from('vendors')
       .select('id, vendor_name, slug, owner_name, mobile_number, whatsapp_number, area, address, state, description, profile_image, category_id, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, categories(name)')
-      .order('vendor_name')
-    setVendors((data as unknown as Vendor[]) || []);     if (error) console.error('Vendors fetch error:', error);
+      .order('vendor_name');
+    setVendors((data as unknown as Vendor[]) || []);
+    if (error) console.error('Vendors fetch error:', error);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchVendors();
-    supabase.from('categories').select('id, name').select('id, ve.order('vendor_name')ndor_name,.then(({ data }) => {
+    supabase.from('categories').select('id, name').order('name').then(({ data }) => {
       setCategories(data || []);
     });
   }, []);
@@ -72,9 +71,8 @@ export default function VendorsPage() {
     await supabase.from('vendors').update({
       subscription_status: 'active',
       payment_status: 'paid',
-      subscription_start: new Date().toISOString(),
+      subscription_start: now.toISOString(),
       subscription_end: oneYearLater.toISOString(),
-      active: true
     }).eq('id', id);
     fetchVendors();
   };
@@ -82,7 +80,6 @@ export default function VendorsPage() {
   const suspendSubscription = async (id: string) => {
     await supabase.from('vendors').update({
       subscription_status: 'suspended',
-      active: false
     }).eq('id', id);
     fetchVendors();
   };
@@ -95,14 +92,15 @@ export default function VendorsPage() {
     newEnd.setDate(newEnd.getDate() + days);
     await supabase.from('vendors').update({
       subscription_end: newEnd.toISOString(),
-      subscription_status: 'active'
+      subscription_status: 'active',
     }).eq('id', id);
     setExtendMenu(null);
     fetchVendors();
   };
 
   const filtered = vendors.filter((v) => {
-    const matchesSearch = .select('id, vev.vendor_name.order('vendor_name')ndor_name,.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch =
+      v.vendor_name.toLowerCase().includes(search.toLowerCase()) ||
       (v.owner_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (v.area || '').toLowerCase().includes(search.toLowerCase()) ||
       (v.mobile_number || '').includes(search);
@@ -144,7 +142,6 @@ export default function VendorsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white">Vendors</h1>
@@ -155,7 +152,6 @@ export default function VendorsPage() {
           </Link>
         </div>
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-5 gap-4 mb-6">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <div className="text-gray-400 text-sm mb-1">Total</div>
@@ -179,7 +175,6 @@ export default function VendorsPage() {
           </div>
         </div>
 
-        {/* Search and Filter */}
         <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -205,7 +200,6 @@ export default function VendorsPage() {
           </select>
         </div>
 
-        {/* Table */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           {loading ? (
             <div className="text-center py-12 text-gray-400">Loading vendors...</div>
@@ -229,25 +223,22 @@ export default function VendorsPage() {
               <tbody className="divide-y divide-gray-800">
                 {filtered.map((vendor) => (
                   <tr key={vendor.id} className="hover:bg-gray-800/30 transition-colors">
-                    {/* Vendor */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {vendor.profile_image ? (
-                          <img src={vendor.profile_image} alt={.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,} className="w-10 h-10 rounded-full object-cover" />
+                          <img src={vendor.profile_image} alt={vendor.vendor_name} className="w-10 h-10 rounded-full object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                            {getInitials(.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,)}
+                            {getInitials(vendor.vendor_name)}
                           </div>
                         )}
                         <div>
-                          <div className="font-medium text-white">{.select('id, vevendor.vendor_namev.vendor_name.order('vendor_name')ndor_name,}</div>
+                          <div className="font-medium text-white">{vendor.vendor_name}</div>
                           {vendor.owner_name && <div className="text-xs text-gray-400">{vendor.owner_name}</div>}
                         </div>
                       </div>
                     </td>
-                    {/* Category */}
                     <td className="px-4 py-3 text-sm text-gray-300">{vendor.categories?.name || 'Uncategorized'}</td>
-                    {/* Mobile */}
                     <td className="px-4 py-3">
                       {vendor.mobile_number ? (
                         <a href={`tel:${vendor.mobile_number}`} className="text-sm text-blue-400 hover:text-blue-300">
@@ -257,16 +248,12 @@ export default function VendorsPage() {
                         <span className="text-sm text-gray-500">—</span>
                       )}
                     </td>
-                    {/* Subscription */}
                     <td className="px-4 py-3">{getStatusBadge(vendor.subscription_status)}</td>
-                    {/* Expires */}
                     <td className="px-4 py-3 text-sm text-gray-300">{formatDate(vendor.subscription_end)}</td>
-                    {/* Area */}
                     <td className="px-4 py-3 text-sm text-gray-300">
                       {vendor.area || '—'}
                       {vendor.state && <div className="text-xs text-gray-500">{vendor.state}</div>}
                     </td>
-                    {/* Actions */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         {vendor.whatsapp_number && (
@@ -339,7 +326,6 @@ export default function VendorsPage() {
           )}
         </div>
 
-        {/* Delete Confirm Modal */}
         {confirmDelete && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
