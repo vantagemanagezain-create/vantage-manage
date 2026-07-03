@@ -156,9 +156,9 @@ export default function VendorDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-white">{vendor.vendor_name}</h1>
             <p className="text-gray-400 text-sm">@{vendor.slug}</p>
-            <span className={`inline-flex items-center gap-1 mt-1 text-sm ${vendor.active ? 'text-green-400' : 'text-red-400'}`}>
+            <span className={`inline-flex items-center gap-1 mt-1 text-sm ${vendor.subscription_status === 'active' ? 'text-green-400' : vendor.subscription_status === 'suspended' ? 'text-orange-400' : 'text-red-400'}`}>
               {vendor.active ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-              {vendor.active ? 'Active' : 'Inactive'}
+              {vendor.subscription_status === 'active' ? 'Active' : vendor.subscription_status.charAt(0).toUpperCase() + vendor.subscription_status.slice(1)}
             </span>
           </div>
         </div>
