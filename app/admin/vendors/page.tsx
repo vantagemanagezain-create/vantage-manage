@@ -274,7 +274,7 @@ export default function VendorsPage() {
                         >
                           <Pencil size={16} />
                         </Link>
-                        {vendor.subscription_status === 'active' ? (
+{vendor.subscription_status === 'active' ? (
                           <button
                             onClick={() => suspendSubscription(vendor.id)}
                             className="px-2 py-1 text-xs bg-orange-600/20 text-orange-400 hover:bg-orange-600/30 rounded transition-colors"
@@ -282,7 +282,7 @@ export default function VendorsPage() {
                           >
                             Suspend
                           </button>
-                        ) : (
+                        ) : vendor.subscription_status === 'suspended' ? (
                           <button
                             onClick={() => activateSubscription(vendor.id)}
                             className="px-2 py-1 text-xs bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded transition-colors"
@@ -290,6 +290,23 @@ export default function VendorsPage() {
                           >
                             Activate
                           </button>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => activateSubscription(vendor.id)}
+                              className="px-2 py-1 text-xs bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded transition-colors"
+                              title="Activate for 1 year"
+                            >
+                              Activate
+                            </button>
+                            <button
+                              onClick={async () => { await supabase.from('vendors').update({ subscription_status: 'inactive' }).eq('id', vendor.id); fetchVendors(); }}
+                              className="px-2 py-1 text-xs bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 rounded transition-colors"
+                              title="Mark Inactive"
+                            >
+                              Inactive
+                            </button>
+                          </div>
                         )}
                         {(vendor.subscription_status === 'active' || vendor.subscription_status === 'expired') && (
                           <div className="relative">
