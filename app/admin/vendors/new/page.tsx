@@ -31,7 +31,6 @@ export default function NewVendorPage() {
   const [area, setArea] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [isActive, setIsActive] = useState(true);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -101,7 +100,9 @@ export default function NewVendorPage() {
         area: area.trim() || null,
         mobile_number: mobileNumber.trim() || null,
         whatsapp_number: whatsappNumber.trim() || mobileNumber.trim() || null,
-        active: isActive,
+        subscription_status: 'inactive',
+        subscription_plan: 'basic',
+        payment_status: 'unpaid',
       })
       .select()
       .single();
@@ -116,7 +117,7 @@ export default function NewVendorPage() {
     if (logoUrl) {
       await supabase
         .from('vendors')
-        .update({ logo_url: logoUrl })
+        .update({ profile_image: logoUrl })
         .eq('id', vendor.id);
     }
 
@@ -126,25 +127,23 @@ export default function NewVendorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link
-            href="/admin/vendors"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Vendors
-          </Link>
-        </div>
+        <Link
+          href="/admin/vendors"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Vendors
+        </Link>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Add New Vendor</h1>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
             <input
@@ -165,7 +164,7 @@ export default function NewVendorPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
-            <p className="text-xs text-gray-400 mt-1">Auto-generated from name. Used in URL.</p>
+            <p className="text-xs text-gray-500 mt-1">Auto-generated from name. Used in URL.</p>
           </div>
 
           <div>
@@ -240,7 +239,11 @@ export default function NewVendorPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
             {logoPreview ? (
               <div className="relative inline-block">
-                <img src={logoPreview} alt="Logo preview" className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300" />
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                />
                 <button
                   type="button"
                   onClick={removeLogo}
@@ -263,23 +266,11 @@ export default function NewVendorPage() {
                   htmlFor="logo-upload"
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-900 cursor-pointer hover:bg-gray-50"
                 >
-                  <Upload className="w-4 h-4 mr-2" /> Upload Logo
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Logo
                 </label>
               </div>
             )}
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="is-active"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="is-active" className="ml-2 text-sm text-gray-700">
-              Active (visible on website)
-            </label>
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -298,7 +289,6 @@ export default function NewVendorPage() {
               Cancel
             </Link>
           </div>
-
         </form>
       </div>
     </div>
