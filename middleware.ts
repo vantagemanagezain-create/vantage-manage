@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin routes protect karo
+  // Protect all /admin routes
   if (pathname.startsWith('/admin')) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -26,10 +26,23 @@ export async function middleware(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
+    // No session - redirect to login
     if (!session) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Has session - check role is 'admin'
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!userRecord || userRecord.role !== 'admin') {
+      // Authenticated but not admin - redirect to home
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     return response;
