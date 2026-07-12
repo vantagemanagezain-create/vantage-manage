@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +16,10 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -29,7 +32,6 @@ export default function AdminLoginPage() {
       return;
     }
 
-    // Check if user has admin role
     const { data: userRecord } = await supabase
       .from('users')
       .select('role')
@@ -53,7 +55,6 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl font-bold text-white">Vantage Manage</h1>
           <p className="text-gray-400 text-sm mt-1">Admin Portal Login</p>
         </div>
-
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-sm text-gray-300 mb-1">Email Address</label>
@@ -77,13 +78,11 @@ export default function AdminLoginPage() {
               placeholder="Enter password"
             />
           </div>
-
           {error && (
             <p className="text-red-400 text-sm bg-red-950/50 border border-red-800 rounded-lg px-4 py-2">
               {error}
             </p>
           )}
-
           <button
             type="submit"
             disabled={loading}
