@@ -26,19 +26,16 @@ export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    checkAuthAndFetchVendor();
-  }, []);
-
   const checkAuthAndFetchVendor = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session || !session.user) {
       router.push('/login');
       return;
     }
 
-    // Fetch vendor data
+    const user = session.user;
+
     const { data, error } = await supabase
       .from('vendors')
       .select('id, vendor_name, owner_name, email, mobile_number, area, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, slug')
@@ -54,123 +51,189 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    checkAuthAndFetchVendor();
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'suspended': return <XCircle className="w-5 h-5 text-red-400" />;
+      case 'pending': return <Clock className="w-5 h-5 text-yellow-400" />;
+      default: return <AlertCircle className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'text-green-400 bg-green-400/10 border-green-400/20';
+      case 'suspended': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      case 'pending': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+      default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading...</p>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  if (!vendor) return null;
-
-  const isVisible = vendor.subscription_status === 'active' &&
-    vendor.subscription_end !== null &&
-    new Date(vendor.subscription_end) > new Date();
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-  };
-
-  const getSubscriptionBadge = () => {
-    switch (vendor.subscription_status) {
-      case 'active': return <span className="flex items-center gap-1 text-green-600 font-semibold"><CheckCircle size={16} /> Active</span>;
-      case 'suspended': return <span className="flex items-center gap-1 text-orange-500 font-semibold"><AlertCircle size={16} /> Suspended</span>;
-      case 'expired': return <span className="flex items-center gap-1 text-red-500 font-semibold"><XCircle size={16} /> Expired</span>;
-      case 'pending': return <span className="flex items-center gap-1 text-yellow-500 font-semibold"><Clock size={16} /> Pending</span>;
-      default: return <span className="flex items-center gap-1 text-gray-500 font-semibold"><XCircle size={16} /> Inactive</span>;
-    }
-  };
+  if (!vendor) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <p className="text-gray-400">Vendor profile not found.</p>
+          <button onClick={handleLogout} className="mt-4 text-blue-400 underline">Go to Login</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-gray-900">
-            <Store size={20} className="text-blue-600" /> Vantage Manage
-          </Link>
-          <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
-            <LogOut size={16} /> Logout
-          </button>
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Header */}
+      <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Store className="w-6 h-6 text-blue-400" />
+            <div>
+              <h1 className="text-lg font-bold text-white">{vendor.vendor_name}</h1>
+              <p className="text-xs text-gray-400">Vendor Dashboard</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link
+              href={`/vendors/${vendor.slug}`}
+              className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              View Public Profile
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-950/80 hover:bg-red-900 text-red-400 hover:text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold">Welcome back!</h1>
-              <p className="text-blue-100 mt-1">{vendor.vendor_name}</p>
-              <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                <div><p className="text-blue-200">Owner</p><p className="font-medium">{vendor.owner_name}</p></div>
-                <div><p className="text-blue-200">Email</p><p className="font-medium">{vendor.email}</p></div>
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Status Banner */}
+        <div className={`flex items-center gap-3 p-4 rounded-xl border mb-8 ${getStatusColor(vendor.subscription_status)}`}>
+          {getStatusIcon(vendor.subscription_status)}
+          <div>
+            <p className="font-medium capitalize">Subscription: {vendor.subscription_status}</p>
+            <p className="text-sm opacity-75">Plan: {vendor.subscription_plan || 'Not set'}</p>
+          </div>
+        </div>
+
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Business Info */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Store className="w-5 h-5 text-blue-400" />
+              <h2 className="font-semibold text-white">Business Info</h2>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-gray-500">Business Name</p>
+                <p className="text-white">{vendor.vendor_name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Owner</p>
+                <p className="text-white">{vendor.owner_name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Area</p>
+                <p className="text-white">{vendor.area}</p>
               </div>
             </div>
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <User size={32} className="text-white" />
+          </div>
+
+          {/* Contact Info */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <User className="w-5 h-5 text-purple-400" />
+              <h2 className="font-semibold text-white">Contact Info</h2>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-gray-500">Email</p>
+                <p className="text-white">{vendor.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Mobile</p>
+                <p className="text-white">{vendor.mobile_number}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-500 mb-3">
-              <CreditCard size={18} /> <span className="text-sm font-medium">Subscription</span>
+          {/* Subscription */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <CreditCard className="w-5 h-5 text-green-400" />
+              <h2 className="font-semibold text-white">Subscription</h2>
             </div>
-            {getSubscriptionBadge()}
-            <p className="text-xs text-gray-400 mt-1">Plan: {vendor.subscription_plan || 'basic'}</p>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-500 mb-3">
-              <CheckCircle size={18} /> <span className="text-sm font-medium">Payment</span>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-gray-500">Plan</p>
+                <p className="text-white capitalize">{vendor.subscription_plan || 'Not set'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Payment Status</p>
+                <p className="text-white capitalize">{vendor.payment_status || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Start</p>
+                <p className="text-white">{vendor.subscription_start ? new Date(vendor.subscription_start).toLocaleDateString() : 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">End</p>
+                <p className="text-white">{vendor.subscription_end ? new Date(vendor.subscription_end).toLocaleDateString() : 'N/A'}</p>
+              </div>
             </div>
-            <span className={`font-semibold ${vendor.payment_status === 'paid' ? 'text-green-600' : 'text-red-500'}`}>
-              {vendor.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
-            </span>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-500 mb-3">
-              <Eye size={18} /> <span className="text-sm font-medium">Visibility</span>
+          {/* Quick Links */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Eye className="w-5 h-5 text-orange-400" />
+              <h2 className="font-semibold text-white">Quick Actions</h2>
             </div>
-            {isVisible ? (
-              <span className="flex items-center gap-1 text-green-600 font-semibold"><CheckCircle size={16} /> Live</span>
-            ) : (
-              <span className="flex items-center gap-1 text-gray-400 font-semibold"><XCircle size={16} /> Not Visible</span>
-            )}
+            <div className="space-y-3">
+              <Link
+                href={`/vendors/${vendor.slug}`}
+                className="flex items-center gap-2 w-full px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg text-sm transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                View Public Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 w-full px-4 py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Subscription Details */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center gap-2 text-gray-700 mb-4">
-            <Calendar size={18} /> <h2 className="font-semibold">Subscription Details</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><p className="text-xs text-gray-400">Start Date</p><p className="font-medium text-gray-700">{formatDate(vendor.subscription_start)}</p></div>
-            <div><p className="text-xs text-gray-400">Expiry Date</p><p className="font-medium text-gray-700">{formatDate(vendor.subscription_end)}</p></div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <Link href="/dashboard/edit-profile" className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
-            <Edit size={16} /> Edit Profile
-          </Link>
-          {vendor.slug && (
-            <Link href={`/vendors/${vendor.slug}`} target="_blank" className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
-              <Eye size={16} /> View Public Profile
-            </Link>
-          )}
         </div>
       </main>
     </div>
