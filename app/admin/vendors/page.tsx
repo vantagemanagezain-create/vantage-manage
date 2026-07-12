@@ -234,7 +234,7 @@ export default function VendorsPage() {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-1 flex-wrap">
                       {vendor.whatsapp_number && (
-                        <a href={`https://wa.me/91${vendor.whatsapp_number}`} target="_blank" rel="noopener noreferrer" className="p-1.5 text-green-400 hover:bg-gray-800 rounded-lg transition-colors"><MessageCircle size={14} /></a>
+                        <a href={`https://wa.me/91${vendor.whatsapp_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-1.5 text-green-400 hover:bg-gray-800 rounded-lg transition-colors"><MessageCircle size={14} /></a>
                       )}
                       <Link href={`/admin/vendors/${vendor.id}`} className="p-1.5 text-blue-400 hover:bg-gray-800 rounded-lg transition-colors"><Pencil size={14} /></Link>
 
