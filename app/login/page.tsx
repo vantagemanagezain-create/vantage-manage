@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Store, ArrowLeft, LogIn } from 'lucide-react';
+import { Store, ArrowLeft, LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [loginType, setLoginType] = useState<'email' | 'mobile'>('email');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function LoginPage() {
           .eq('mobile_number', mobile.trim())
           .single();
         if (vendorError || !vendorData) {
-          throw new Error('No vendor found with this mobile number.');
+          throw new Error('Invalid email/mobile number or password.');
         }
         authEmail = vendorData.email;
       }
@@ -36,10 +37,10 @@ export default function LoginPage() {
         email: authEmail,
         password,
       });
-      if (authError) throw authError;
+      if (authError) throw new Error('Invalid email/mobile number or password.');
       router.replace('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Invalid email/mobile number or password.');
       setLoading(false);
     }
   };
@@ -70,9 +71,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setLoginType('email'); setError(''); }}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'email'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                loginType === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
               }`}
             >
               Email
@@ -81,9 +80,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setLoginType('mobile'); setError(''); }}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'mobile'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                loginType === 'mobile' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
               }`}
             >
               Mobile Number
@@ -123,23 +120,38 @@ export default function LoginPage() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-300">Password</label>
+                <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
               disabled={loading}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
             >
-              {loading ? 'Logging in...' : 'Login to Dashboard'}
+              {loading ? 'Signing in...' : 'Login to Dashboard'}
             </button>
           </form>
           <p className="text-center text-gray-500 text-sm mt-6">
