@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function AdminLayout({
   children,
@@ -9,7 +9,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const handleLogout = async () => {
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     await supabase.auth.signOut();
     window.location.href = '/admin/login';
   };
