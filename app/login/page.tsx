@@ -46,10 +46,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
@@ -57,21 +57,22 @@ export default function LoginPage() {
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <Store className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Vantage Manage</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Vantage Manage</h1>
           </div>
-          <p className="text-gray-400">Login to your vendor dashboard</p>
+          <p className="text-gray-500">Login to your vendor dashboard</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <LogIn className="w-5 h-5 text-blue-400" />
-            <h2 className="text-xl font-semibold text-white">Vendor Login</h2>
-          </div>
-          <div className="flex rounded-lg overflow-hidden border border-gray-700 mb-6">
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Vendor Login</h2>
+
+          <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-6">
             <button
               type="button"
               onClick={() => { setLoginType('email'); setError(''); }}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+                loginType === 'email'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:text-gray-800'
               }`}
             >
               Email
@@ -80,21 +81,25 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setLoginType('mobile'); setError(''); }}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'mobile' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+                loginType === 'mobile'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:text-gray-800'
               }`}
             >
               Mobile Number
             </button>
           </div>
-          {error && (
-            <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg">
-              <p className="text-red-400 text-sm">{error}</p>
-            </div>
-          )}
+
           <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
+
             {loginType === 'email' ? (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                 <input
                   type="email"
                   value={email}
@@ -102,12 +107,12 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Mobile Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
                 <input
                   type="tel"
                   value={mobile}
@@ -115,16 +120,15 @@ export default function LoginPage() {
                   required
                   autoComplete="tel"
                   placeholder="e.g. 9876543210"
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             )}
+
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-300">Password</label>
-                <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
-                  Forgot password?
-                </Link>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">Forgot password?</Link>
               </div>
               <div className="relative">
                 <input
@@ -134,34 +138,40 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <LogIn className="w-5 h-5" />
               {loading ? 'Signing in...' : 'Login to Dashboard'}
             </button>
           </form>
-          <p className="text-center text-gray-500 text-sm mt-6">
+
+          <p className="text-center text-sm text-gray-500 mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/register-business" className="text-blue-400 hover:text-blue-300 transition-colors">
+            <Link href="/register-business" className="text-blue-600 hover:text-blue-700 font-medium">
               Register your business
             </Link>
           </p>
-          <p className="text-center text-gray-600 text-xs mt-4">Secure login powered by Supabase Auth</p>
         </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          Secure login powered by Supabase Auth
+        </p>
       </div>
     </div>
   );
