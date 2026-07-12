@@ -28,25 +28,20 @@ export default function DashboardPage() {
 
   const checkAuthAndFetchVendor = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-
     if (!session || !session.user) {
       router.push('/login');
       return;
     }
-
     const user = session.user;
-
     const { data, error } = await supabase
       .from('vendors')
       .select('id, vendor_name, owner_name, email, mobile_number, area, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, slug')
       .eq('email', user.email)
       .single();
-
     if (error || !data) {
       router.push('/login');
       return;
     }
-
     setVendor(data as Vendor);
     setLoading(false);
   };
@@ -62,180 +57,168 @@ export default function DashboardPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'suspended': return <XCircle className="w-5 h-5 text-red-400" />;
-      case 'pending': return <Clock className="w-5 h-5 text-yellow-400" />;
-      default: return <AlertCircle className="w-5 h-5 text-gray-400" />;
+      case 'active': return <CheckCircle className="w-5 h-5" />;
+      case 'suspended': return <XCircle className="w-5 h-5" />;
+      case 'pending': return <Clock className="w-5 h-5" />;
+      default: return <AlertCircle className="w-5 h-5" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      case 'suspended': return 'text-red-400 bg-red-400/10 border-red-400/20';
-      case 'pending': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
+      case 'active': return 'text-green-600 bg-green-50 border-green-200';
+      case 'suspended': return 'text-red-600 bg-red-50 border-red-200';
+      case 'pending': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      default: return 'text-gray-500 bg-gray-50 border-gray-200';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading your dashboard...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading your dashboard...</p>
       </div>
     );
   }
 
   if (!vendor) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <p className="text-gray-400">Vendor profile not found.</p>
-          <button onClick={handleLogout} className="mt-4 text-blue-400 underline">Go to Login</button>
+          <p className="text-gray-600 mb-4">Vendor profile not found.</p>
+          <Link href="/login" className="text-blue-600 hover:text-blue-700">Go to Login</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Store className="w-6 h-6 text-blue-400" />
-            <div>
-              <h1 className="text-lg font-bold text-white">{vendor.vendor_name}</h1>
-              <p className="text-xs text-gray-400">Vendor Dashboard</p>
-            </div>
+      <div className="bg-white border-b border-gray-200 px-4 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">{vendor.vendor_name}</h1>
+            <p className="text-sm text-gray-500">Vendor Dashboard</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               href={`/vendors/${vendor.slug}`}
-              className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               <Eye className="w-4 h-4" />
               View Public Profile
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-950/80 hover:bg-red-900 text-red-400 hover:text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Logout
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Status Banner */}
-        <div className={`flex items-center gap-3 p-4 rounded-xl border mb-8 ${getStatusColor(vendor.subscription_status)}`}>
+        <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${getStatusColor(vendor.subscription_status)}`}>
           {getStatusIcon(vendor.subscription_status)}
-          <div>
-            <p className="font-medium capitalize">Subscription: {vendor.subscription_status}</p>
-            <p className="text-sm opacity-75">Plan: {vendor.subscription_plan || 'Not set'}</p>
-          </div>
+          <span>Subscription: {vendor.subscription_status}</span>
+          <span className="ml-auto">Plan: {vendor.subscription_plan || 'Not set'}</span>
         </div>
 
         {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Business Info */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Store className="w-5 h-5 text-blue-400" />
-              <h2 className="font-semibold text-white">Business Info</h2>
+              <Store className="w-5 h-5 text-blue-600" />
+              <h2 className="font-semibold text-gray-900">Business Info</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-500">Business Name</p>
-                <p className="text-white">{vendor.vendor_name}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Business Name</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.vendor_name}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Owner</p>
-                <p className="text-white">{vendor.owner_name}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Owner</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.owner_name}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Area</p>
-                <p className="text-white">{vendor.area}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Area</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.area}</p>
               </div>
             </div>
           </div>
 
           {/* Contact Info */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5 text-purple-400" />
-              <h2 className="font-semibold text-white">Contact Info</h2>
+              <User className="w-5 h-5 text-blue-600" />
+              <h2 className="font-semibold text-gray-900">Contact Info</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-500">Email</p>
-                <p className="text-white">{vendor.email}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Email</p>
+                <p className="text-sm font-medium text-gray-900 break-all">{vendor.email}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Mobile</p>
-                <p className="text-white">{vendor.mobile_number}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Mobile</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.mobile_number}</p>
               </div>
             </div>
           </div>
 
           {/* Subscription */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <CreditCard className="w-5 h-5 text-green-400" />
-              <h2 className="font-semibold text-white">Subscription</h2>
+              <CreditCard className="w-5 h-5 text-blue-600" />
+              <h2 className="font-semibold text-gray-900">Subscription</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-500">Plan</p>
-                <p className="text-white capitalize">{vendor.subscription_plan || 'Not set'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Plan</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.subscription_plan || 'Not set'}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Payment Status</p>
-                <p className="text-white capitalize">{vendor.payment_status || 'N/A'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Payment Status</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.payment_status || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Start</p>
-                <p className="text-white">{vendor.subscription_start ? new Date(vendor.subscription_start).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Start</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.subscription_start ? new Date(vendor.subscription_start).toLocaleDateString() : 'N/A'}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">End</p>
-                <p className="text-white">{vendor.subscription_end ? new Date(vendor.subscription_end).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">End</p>
+                <p className="text-sm font-medium text-gray-900">{vendor.subscription_end ? new Date(vendor.subscription_end).toLocaleDateString() : 'N/A'}</p>
               </div>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Eye className="w-5 h-5 text-orange-400" />
-              <h2 className="font-semibold text-white">Quick Actions</h2>
-            </div>
-            <div className="space-y-3">
-              <Link
-                href={`/vendors/${vendor.slug}`}
-                className="flex items-center gap-2 w-full px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg text-sm transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                View Public Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
             </div>
           </div>
         </div>
-      </main>
+
+        {/* Quick Links */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/vendors/${vendor.slug}`}
+              className="flex items-center gap-2 text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              View Public Profile
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
