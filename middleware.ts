@@ -4,11 +4,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow /admin/login to pass through without auth check
+  if (pathname === '/admin/login') {
+    return NextResponse.next();
+  }
+
   // Protect all /admin routes
   if (pathname.startsWith('/admin')) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
     const response = NextResponse.next();
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
@@ -26,9 +30,9 @@ export async function middleware(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // No session - redirect to login
+    // No session - redirect to /admin/login
     if (!session) {
-      const loginUrl = new URL('/auth/login', request.url);
+      const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -52,7 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/admin/:path*'],
 };
