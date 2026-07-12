@@ -17,9 +17,7 @@ export async function middleware(request: NextRequest) {
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
+        getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
@@ -30,14 +28,12 @@ export async function middleware(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // No session - redirect to /admin/login
     if (!session) {
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Has session - check role is 'admin'
     const { data: userRecord } = await supabase
       .from('users')
       .select('role')
@@ -45,7 +41,6 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (!userRecord || userRecord.role !== 'admin') {
-      // Authenticated but not admin - redirect to home
       return NextResponse.redirect(new URL('/', request.url));
     }
 
