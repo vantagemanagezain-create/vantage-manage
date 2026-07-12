@@ -153,7 +153,7 @@ function VendorsContent() {
                     <a href={`tel:${vendor.mobile_number}`} className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-xs py-1.5 rounded-lg hover:bg-blue-700">
                       <Phone size={14} /> Call
                     </a>
-                    <a href={`https://wa.me/${vendor.whatsapp_number}`} className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600">
+                    <a href={`https://wa.me/91${vendor.whatsapp_number.replace(/\D/g, '')}`} className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600">
                       <MessageCircle size={14} /> WhatsApp
                     </a>
                   </div>
