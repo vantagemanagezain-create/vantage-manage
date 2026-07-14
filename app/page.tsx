@@ -93,7 +93,7 @@ export default function HomePage() {
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />Moradabad, Uttar Pradesh</span>
           <Link href="/vendors" className="hover:text-white">Directory</Link>
-          <Link href="/admin" className="hover:text-white">Admin</Link>
+          <Link href="/login" className="hover:text-white">Vendor Login</Link>
         </div>
       </nav>
 
