@@ -72,7 +72,7 @@ export default function VendorDetailPage() {
           <Link href="/" className="flex items-center gap-2 font-bold text-gray-900">
             <Store size={20} className="text-blue-600" /> Vantage Manage
           </Link>
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900">Admin</Link>
+          
         </div>
       </header>
 
