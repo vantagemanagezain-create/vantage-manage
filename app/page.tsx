@@ -23,18 +23,30 @@ type Category = {
   name: string;
   slug: string;
 };
+type Advertisement = {
+  id: string;
+  title: string;
+  image_url: string;
+  target_url: string;
+  position: string;
+  active: boolean;
+  start_date: string;
+  end_date: string;
+};
 
 export default function HomePage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [totalCount, setTotalCount] = useState(0);
+    const [ads, setAds] = useState<Advertisement[]>([]);
   const supabase = createClient();
 
   useEffect(() => {
     fetchLatestVendors();
     fetchCategories();
     fetchTotalCount();
+    fetchAds();
   }, []);
 
   async function fetchLatestVendors() {
@@ -63,6 +75,16 @@ export default function HomePage() {
       ;
     if (count !== null) setTotalCount(count);
   }
+  async function fetchAds() {
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('advertisements')
+      .select('*')
+      .eq('active', true)
+      .lte('start_date', today)
+      .gte('end_date', today);
+    if (data) setAds(data);
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -72,16 +94,26 @@ export default function HomePage() {
       window.location.href = '/vendors';
     }
   }
+  const headerAd = ads.find(a => a.position === 'header');
+  const heroAd = ads.find(a => a.position === 'hero');
+  const bottomAd = ads.find(a => a.position === 'bottom');
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
 
       {/* HERO BANNER - Ticker */}
       <div className="bg-blue-700 text-white text-xs py-2 px-4 text-center">
-        Vantage Manage — Moradabad’s Fastest Growing Business Directory •{' '}
-        <Link href="/register-business" className="underline font-semibold">Register Your Business</Link>
-        {' '}•{' '}
-        <Link href="/vendors" className="underline">Browse Directory</Link>
+          {headerAd ? (
+            <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="h-5 object-contain" />}
+              <span className="font-semibold">{headerAd.title}</span>
+            </a>
+          ) : (
+            <>Vantage Manage — Moradabad's Fastest Growing Business Directory •{' '}
+            <Link href="/register-business" className="underline font-semibold">Register Your Business</Link>{' '}
+            •{' '}
+            <Link href="/vendors" className="underline">Browse Directory</Link></>
+          )}
       </div>
 
       {/* TOP NAV */}
@@ -130,7 +162,21 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* MID BANNER - Advertise With Us */}
+              {heroAd && (
+          <div className="mx-6 my-8">
+            <a href={heroAd.target_url} target="_blank" rel="noopener noreferrer" className="block rounded-2xl overflow-hidden">
+              {heroAd.image_url ? (
+                <img src={heroAd.image_url} alt={heroAd.title} className="w-full max-h-48 object-cover" />
+              ) : (
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-white text-center rounded-2xl">
+                  <p className="text-xl font-bold">{heroAd.title}</p>
+                </div>
+              )}
+            </a>
+          </div>
+        )}
+
+{/* MID BANNER - Advertise With Us */}
       <section className="mx-6 my-8 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-8 text-white text-center max-w-5xl md:mx-auto">
         <p className="text-xs uppercase tracking-widest mb-2 opacity-80">Advertisement Space</p>
         <h2 className="text-2xl font-bold mb-3">Your Business Could Be Here</h2>
@@ -218,7 +264,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
+              {bottomAd && (
+          <div className="w-full">
+            <a href={bottomAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
+              {bottomAd.image_url ? (
+                <img src={bottomAd.image_url} alt={bottomAd.title} className="w-full max-h-24 object-cover" />
+              ) : (
+                <div className="bg-gray-800 text-white text-center py-4 font-semibold">{bottomAd.title}</div>
+              )}
+            </a>
+          </div>
+        )}
+
+        {/* FOOTER */}
       <footer className="text-center text-xs text-gray-600 py-6">
         Moradabad Business Directory © {new Date().getFullYear()} · Powered by Vantage Manage
       </footer>
