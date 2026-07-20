@@ -29,9 +29,9 @@ type Advertisement = {
   image_url: string;
   target_url: string;
   position: string;
-  active: boolean;
-  start_date: string;
-  end_date: string;
+is_active: boolean;
+starts_at: string;
+  expires_at: string;
 };
 
 export default function HomePage() {
@@ -80,9 +80,9 @@ export default function HomePage() {
     const { data } = await supabase
       .from('advertisements')
       .select('*')
-      .eq('active', true)
-      .lte('start_date', today)
-      .gte('end_date', today);
+      .eq('is_active', true)
+      .lte('starts_at', today)
+      .gte('expires_at', today);
     if (data) setAds(data);
   }
 
