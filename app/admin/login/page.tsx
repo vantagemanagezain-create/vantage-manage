@@ -37,7 +37,6 @@ export default function AdminLoginPage() {
         .single();
 
       if (!userRecord || userRecord.role !== 'admin') {
-        await supabase.auth.signOut();
         setError('Access denied. Admin account required.');
         setLoading(false);
         return;
