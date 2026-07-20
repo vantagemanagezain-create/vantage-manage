@@ -105,7 +105,7 @@ export default function HomePage() {
       <div className="bg-blue-700 text-white text-xs py-2 px-4 text-center">
           {headerAd ? (
             <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="h-5 object-contain" />}
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="h-24 object-cover" />}
               <span className="font-semibold">{headerAd.title}</span>
             </a>
           ) : (
@@ -268,7 +268,7 @@ export default function HomePage() {
           <div className="w-full">
             <a href={bottomAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
               {bottomAd.image_url ? (
-                <img src={bottomAd.image_url} alt={bottomAd.title} className="w-full max-h-24 object-cover" />
+                <img src={bottomAd.image_url} alt={bottomAd.title} className="w-full h-56 object-cover" />
               ) : (
                 <div className="bg-gray-800 text-white text-center py-4 font-semibold">{bottomAd.title}</div>
               )}
