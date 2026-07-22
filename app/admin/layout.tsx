@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
 export default function AdminLayout({
@@ -10,6 +11,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,10 +35,12 @@ export default function AdminLayout({
     window.location.href = '/admin/login';
   };
 
+  const showSidebar = isAdmin && !isLoginPage;
+
   return (
     <div className="flex h-screen bg-gray-950 text-white overflow-hidden">
       {/* Sidebar */}
-      {isAdmin && (<aside className="w-56 bg-gray-900 border-r border-gray-800 flex flex-col">
+      {showSidebar && (<aside className="w-56 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div className="p-4 border-b border-gray-800">
           <h1 className="text-lg font-bold text-white">Vantage Manage</h1>
           <p className="text-xs text-gray-400">Admin Portal</p>
@@ -59,12 +64,12 @@ export default function AdminLayout({
           >
             Categories
           </Link>
-                      <Link
-              href="/admin/advertisements"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-            >
-              Advertisements
-            </Link>
+          <Link
+            href="/admin/advertisements"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            Advertisements
+          </Link>
         </nav>
         {isAdmin && (
           <div className="p-3 border-t border-gray-800">
