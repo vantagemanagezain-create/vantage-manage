@@ -131,7 +131,7 @@ export default function HomePage() {
 
       {/* HERO SEARCH SECTION */}
       <section className="px-6 py-14 text-center max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-3">Moradabad Business Directory</h1>
+        <h1 className="text-4xl font-bold mb-3">Moradabad Business Directory (TEST)</h1>
         <p className="text-gray-400 mb-8">Find local vendors, shops and businesses. Connect directly via call or WhatsApp.</p>
         <form onSubmit={handleSearch} className="relative flex items-center">
           <Search className="absolute left-4 w-5 h-5 text-gray-400" />
@@ -278,7 +278,7 @@ export default function HomePage() {
 
         {/* FOOTER */}
       <footer className="text-center text-xs text-gray-600 py-6">
-        Moradabad Business Directory © {new Date().getFullYear()} · Powered by Vantage Manage
+        Moradabad Business Directory (TEST) © {new Date().getFullYear()} · Powered by Vantage Manage
       </footer>
 
     </div>
