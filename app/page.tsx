@@ -76,7 +76,7 @@ export default function HomePage() {
     if (count !== null) setTotalCount(count);
   }
   async function fetchAds() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString();
     const { data } = await supabase
       .from('advertisements')
       .select('*')
