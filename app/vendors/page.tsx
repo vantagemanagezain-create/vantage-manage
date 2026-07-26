@@ -32,6 +32,13 @@ function VendorsContent() {
   useEffect(() => {
     fetchVendors();
   }, []);
+  const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsVendorLoggedIn(!!session);
+    });
+  }, []);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search') || '';
@@ -95,12 +102,11 @@ function VendorsContent() {
           <Link href="/" className="flex items-center gap-2 font-bold text-lg">
             <Store className="text-blue-600" /> Vantage Manage
           </Link>
-          <Link href="/admin" className="text-sm font-medium text-gray-600">Admin</Link>
-        </div>
+          div>
       </header>
       <main className="max-w-xl mx-auto p-4">
-        <form onSubmit={handleSearch} className="relative mb-6">
-          <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+                      <Link href={isVendorLoggedIn ? "/dashboard" : "/login"} className="text-sm font-medium text-gray-600">{isVendorLoggedIn ? "Vendor Dashboard" : "Vendor Login"}</Link>
+          </<Search className="absolute left-3 top-3 text-gray-400" size={18} />
           <input
             type="text"
             placeholder="Search vendors, areas, categories..."
