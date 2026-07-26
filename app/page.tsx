@@ -102,11 +102,11 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-950 text-white">
 
       {/* HERO BANNER - Ticker */}
-      <div className="bg-blue-700 text-white text-xs py-2 px-4 text-center">
+      <div className="flex justify-center py-2 bg-transparent">
           {headerAd ? (
-            <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="w-full h-[150px] object-cover object-center" />}
-              <span className="font-semibold">{headerAd.title}</span>
+            <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex justify-center">
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="max-w-full h-auto mx-auto block" />}
+              {!headerAd.image_url && <span className="font-semibold">{headerAd.title}</span>}
             </a>
           ) : (
             <>Vantage Manage — Moradabad's Fastest Growing Business Directory •{' '}
@@ -164,9 +164,9 @@ export default function HomePage() {
 
               {heroAd && (
           <div className="mx-6 my-8">
-            <a href={heroAd.target_url} target="_blank" rel="noopener noreferrer" className="block rounded-2xl overflow-hidden">
+            <a href={heroAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
               {heroAd.image_url ? (
-                <img src={heroAd.image_url} alt={heroAd.title} className="w-full h-[480px] rounded-2xl object-cover object-center" />
+                <img src={heroAd.image_url} alt={heroAd.title} className="max-w-full h-auto mx-auto block rounded-2xl" />
               ) : (
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-white text-center rounded-2xl">
                   <p className="text-xl font-bold">{heroAd.title}</p>
@@ -265,10 +265,10 @@ export default function HomePage() {
       </section>
 
               {bottomAd && (
-          <div className="w-full">
+          <div className="flex justify-center py-4">
             <a href={bottomAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
               {bottomAd.image_url ? (
-                <img src={bottomAd.image_url} alt={bottomAd.title} className="w-full h-[240px] object-cover object-center" />
+                <img src={bottomAd.image_url} alt={bottomAd.title} className="max-w-full h-auto mx-auto block" />
               ) : (
                 <div className="bg-gray-800 text-white text-center py-4 font-semibold">{bottomAd.title}</div>
               )}
