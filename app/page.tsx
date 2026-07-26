@@ -105,7 +105,7 @@ export default function HomePage() {
       <div className="bg-blue-700 text-white text-xs py-2 px-4 text-center">
           {headerAd ? (
             <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="h-24 object-cover" />}
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="w-full h-[150px] object-cover object-center" />}
               <span className="font-semibold">{headerAd.title}</span>
             </a>
           ) : (
@@ -166,7 +166,7 @@ export default function HomePage() {
           <div className="mx-6 my-8">
             <a href={heroAd.target_url} target="_blank" rel="noopener noreferrer" className="block rounded-2xl overflow-hidden">
               {heroAd.image_url ? (
-                <img src={heroAd.image_url} alt={heroAd.title} className="w-full max-h-48 object-cover" />
+                <img src={heroAd.image_url} alt={heroAd.title} className="w-full h-[480px] rounded-2xl object-cover object-center" />
               ) : (
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-white text-center rounded-2xl">
                   <p className="text-xl font-bold">{heroAd.title}</p>
