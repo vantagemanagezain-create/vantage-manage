@@ -163,10 +163,10 @@ export default function HomePage() {
       )}
 
               {heroAd && (
-          <div className="mx-6 my-8">
+          <div className="flex justify-center my-8 px-4">
             <a href={heroAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
               {heroAd.image_url ? (
-                <img src={heroAd.image_url} alt={heroAd.title} className="max-w-full h-auto mx-auto block rounded-2xl" />
+                <img src={heroAd.image_url} alt={heroAd.title} className="w-full max-w-[320px] md:max-w-[420px] h-auto block rounded-2xl" />
               ) : (
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-white text-center rounded-2xl">
                   <p className="text-xl font-bold">{heroAd.title}</p>
@@ -234,7 +234,7 @@ export default function HomePage() {
       </section>
 
       {/* REGISTER YOUR BUSINESS */}
-      <section className="mx-6 my-8 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white max-w-5xl md:mx-auto">
+      <section className="flex justify-center my-8 px-4 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white max-w-5xl md:mx-auto">
         <h2 className="text-base font-bold mb-2">Get Your Business Listed in Moradabad’s Trusted Directory</h2>
         <p className="text-sm mb-2 opacity-90">Verified business profiles, WhatsApp leads, and local visibility for manufacturers, exporters, suppliers, and service providers.</p>
         <p className="font-semibold mb-5">Founding Member Plan • ₹499/year</p>
