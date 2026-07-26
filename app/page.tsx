@@ -149,7 +149,7 @@ export default function HomePage() {
 
       {/* CATEGORIES */}
       {categories.length > 0 && (
-        <section className="px-6 pb-10 max-w-5xl mx-auto">
+        <section className="px-6 pb-10 max-w-5xl mx-auto overflow-hidden">
           <h2 className="text-lg font-semibold mb-4">Popular Categories</h2>
           <div className="flex flex-wrap gap-3">
             {categories.map((cat) => (
@@ -177,15 +177,15 @@ export default function HomePage() {
         )}
 
 {/* MID BANNER - Advertise With Us */}
-      <section className="mx-6 my-8 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-8 text-white text-center max-w-5xl md:mx-auto">
+      <section className="md:float-right md:w-[360px] md:ml-6 mb-6 w-full rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-4 text-white shadow-lg">
         <p className="text-xs uppercase tracking-widest mb-2 opacity-80">Advertisement Space</p>
-        <h2 className="text-2xl font-bold mb-3">Your Business Could Be Here</h2>
-        <p className="text-sm mb-5 opacity-90">Promote your business on the homepage of Moradabad’s fastest growing business directory.</p>
+        <h2 className="text-base font-bold mb-2">Your Business Could Be Here</h2>
+        <p className="text-xs mb-3 opacity-90">Promote your business on the homepage of Moradabad’s fastest growing business directory.</p>
         <a
           href="https://wa.me/919259180235?text=Hi%2C%20I%20want%20to%20advertise%20on%20Vantage%20Manage%20homepage"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 bg-white text-orange-600 font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-orange-50"
+          className="inline-flex items-center gap-2 bg-white text-orange-600 font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-orange-50"
         >
           <MessageCircle className="w-4 h-4" />
           Advertise With Us
@@ -193,7 +193,7 @@ export default function HomePage() {
       </section>
 
       {/* LATEST VENDORS */}
-      <section className="px-6 pb-10 max-w-5xl mx-auto">
+      <section className="px-6 pb-10 max-w-5xl mx-auto overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Latest Vendors</h2>
           <Link href="/vendors" className="flex items-center gap-1 text-blue-400 text-sm hover:underline">
@@ -235,10 +235,10 @@ export default function HomePage() {
 
       {/* REGISTER YOUR BUSINESS */}
       <section className="mx-6 my-8 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white max-w-5xl md:mx-auto">
-        <h2 className="text-2xl font-bold mb-3">Get Your Business Listed in Moradabad’s Trusted Directory</h2>
+        <h2 className="text-base font-bold mb-2">Get Your Business Listed in Moradabad’s Trusted Directory</h2>
         <p className="text-sm mb-2 opacity-90">Verified business profiles, WhatsApp leads, and local visibility for manufacturers, exporters, suppliers, and service providers.</p>
         <p className="font-semibold mb-5">Founding Member Plan • ₹499/year</p>
-        <Link href="/register-business" className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-blue-50">
+        <Link href="/register-business" className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-blue-50">
           Register Your Business <ArrowRight className="w-4 h-4" />
         </Link>
       </section>
