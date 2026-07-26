@@ -234,7 +234,7 @@ export default function HomePage() {
       </section>
 
       {/* REGISTER YOUR BUSINESS */}
-      <section className="flex justify-center my-8 px-4 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white max-w-5xl md:mx-auto">
+              <section className="flex flex-col items-center text-center my-8 px-6 py-10 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-800 text-white w-full max-w-[700px] md:max-w-[800px] mx-auto">
         <h2 className="text-base font-bold mb-2">Get Your Business Listed in Moradabad’s Trusted Directory</h2>
         <p className="text-sm mb-2 opacity-90">Verified business profiles, WhatsApp leads, and local visibility for manufacturers, exporters, suppliers, and service providers.</p>
         <p className="font-semibold mb-5">Founding Member Plan • ₹499/year</p>
