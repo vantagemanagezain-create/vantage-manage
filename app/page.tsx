@@ -105,7 +105,7 @@ export default function HomePage() {
       <div className="flex justify-center py-2 bg-transparent">
           {headerAd ? (
             <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex justify-center">
-              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="max-w-full h-auto mx-auto block" />}
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="w-full max-w-[380px] md:max-w-[450px] h-auto mx-auto block" />}
               {!headerAd.image_url && <span className="font-semibold">{headerAd.title}</span>}
             </a>
           ) : (
@@ -177,7 +177,7 @@ export default function HomePage() {
         )}
 
 {/* MID BANNER - Advertise With Us */}
-      <section className="md:float-right md:w-[360px] md:ml-6 mb-6 w-full rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-4 text-white shadow-lg">
+              <section className="mx-auto mb-6 w-full max-w-[380px] md:max-w-[450px] rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-4 text-white shadow-lg text-center">
         <p className="text-xs uppercase tracking-widest mb-2 opacity-80">Advertisement Space</p>
         <h2 className="text-base font-bold mb-2">Your Business Could Be Here</h2>
         <p className="text-xs mb-3 opacity-90">Promote your business on the homepage of Moradabad’s fastest growing business directory.</p>
@@ -268,7 +268,7 @@ export default function HomePage() {
           <div className="flex justify-center py-4">
             <a href={bottomAd.target_url} target="_blank" rel="noopener noreferrer" className="block">
               {bottomAd.image_url ? (
-                <img src={bottomAd.image_url} alt={bottomAd.title} className="max-w-full h-auto mx-auto block" />
+                                <img src={bottomAd.image_url} alt={bottomAd.title} className="w-full max-w-[380px] md:max-w-[450px] h-auto mx-auto block" />
               ) : (
                 <div className="bg-gray-800 text-white text-center py-4 font-semibold">{bottomAd.title}</div>
               )}
