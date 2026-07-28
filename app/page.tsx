@@ -53,6 +53,7 @@ export default function HomePage() {
     const { data } = await supabase
       .from('vendors')
       .select('*')
+              .eq('subscription_status', 'active')
       
       .order('created_at', { ascending: false })
       .limit(6);
