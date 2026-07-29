@@ -40,6 +40,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [totalCount, setTotalCount] = useState(0);
     const [ads, setAds] = useState<Advertisement[]>([]);
+  const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -47,6 +48,30 @@ export default function HomePage() {
     fetchCategories();
     fetchTotalCount();
     fetchAds();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isMounted) {
+        setIsVendorLoggedIn(!!session);
+      }
+    };
+
+    syncSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
+        setIsVendorLoggedIn(!!session);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function fetchLatestVendors() {
@@ -126,7 +151,9 @@ export default function HomePage() {
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />Moradabad, Uttar Pradesh</span>
           <Link href="/vendors" className="hover:text-white">Directory</Link>
-          <Link href="/login" className="hover:text-white">Vendor Login</Link>
+          <Link href={isVendorLoggedIn ? '/dashboard' : '/login'} className="hover:text-white">
+            {isVendorLoggedIn ? 'Vendor Dashboard' : 'Vendor Login'}
+          </Link>
         </div>
       </nav>
 
