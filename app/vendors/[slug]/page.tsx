@@ -9,24 +9,47 @@ type Vendor = {
   id: string;
   vendor_name: string;
   slug: string;
-  owner_name: string;
-  mobile_number: string;
-  whatsapp_number: string;
-  area: string;
-  description: string;
-  profile_image: string;
-  subscription_status: string;
-  categories?: { name: string };
+  owner_name: string | null;
+  category_id: string | null;
+  mobile_number: string | null;
+  whatsapp_number: string | null;
+  description: string | null;
+  profile_image: string | null;
+  subscription_status: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  pin_code: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  linkedin: string | null;
+  youtube: string | null;
 };
 
 export default function VendorDetailPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
   const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [categoryName, setCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
-    if (slug) fetchVendor();
+    if (slug) {
+      fetchVendor();
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const handleFocus = () => {
+      fetchVendor();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [slug]);
 
   useEffect(() => {
@@ -36,14 +59,60 @@ export default function VendorDetailPage() {
   }, [vendor]);
 
   async function fetchVendor() {
+    if (!slug) return;
+
     setLoading(true);
-    const { data } = await supabase
+    setCategoryName('');
+
+    // Try using the browser Supabase client first.
+    const { data, error } = await supabase
       .from('vendors')
-      .select('*, categories(name)')
+      .select('id, vendor_name, slug, owner_name, category_id, mobile_number, whatsapp_number, description, profile_image, subscription_status')
       .eq('slug', slug)
-      .eq('subscription_status', 'active')
-      .single();
-    setVendor(data);
+      .maybeSingle();
+
+    let vendorData = data as Vendor | null;
+
+    // If the client call failed (for example due to an invalid refresh token),
+    // fall back to the public REST endpoint using the anon key so the page can
+    // still render vendor data without depending on the auth refresh flow.
+    if (!vendorData || error) {
+      try {
+        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/vendors?select=id,vendor_name,slug,owner_name,category_id,mobile_number,whatsapp_number,description,profile_image,subscription_status&slug=eq.${encodeURIComponent(
+          slug
+        )}`;
+        const res = await fetch(url, {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`,
+            Accept: 'application/json',
+          },
+        });
+        if (res.ok) {
+          const arr = await res.json();
+          vendorData = (arr && arr.length > 0 ? arr[0] : null) as Vendor | null;
+        } else {
+          console.error('Vendor REST fallback failed', res.status, await res.text());
+        }
+      } catch (e) {
+        console.error('Vendor REST fallback error', e);
+        // swallow and continue; vendorData will remain null
+      }
+    }
+
+    setVendor(vendorData);
+
+    if (vendorData?.category_id) {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', vendorData.category_id)
+        .maybeSingle();
+
+      const categoryRecord = categoryData as { name?: string | null } | null;
+      setCategoryName(categoryRecord?.name || '');
+    }
+
     setLoading(false);
   }
 
@@ -72,7 +141,6 @@ export default function VendorDetailPage() {
           <Link href="/" className="flex items-center gap-2 font-bold text-gray-900">
             <Store size={20} className="text-blue-600" /> Vantage Manage
           </Link>
-          
         </div>
       </header>
 
@@ -93,12 +161,16 @@ export default function VendorDetailPage() {
               )}
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">{vendor.vendor_name}</h1>
-                {vendor.categories?.name && (
+                {categoryName && (
                   <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-white/20 rounded-full text-sm">
-                    <Tag size={12} /> {vendor.categories.name}
+                    <Tag size={12} /> {categoryName}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 mt-2 ml-2 px-3 py-1 bg-green-500/30 rounded-full text-sm">Active</span>
+                {vendor.subscription_status && (
+                  <span className="inline-flex items-center gap-1 mt-2 ml-2 px-3 py-1 bg-green-500/30 rounded-full text-sm">
+                    {vendor.subscription_status}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -120,10 +192,15 @@ export default function VendorDetailPage() {
                     <div><p className="text-xs text-gray-400">Owner</p><p className="text-gray-700 font-medium">{vendor.owner_name}</p></div>
                   </div>
                 )}
-                {vendor.area && (
+                {(vendor.address || vendor.city || vendor.state || vendor.pin_code || categoryName) && (
                   <div className="flex items-center gap-3">
                     <MapPin size={16} className="text-gray-400" />
-                    <div><p className="text-xs text-gray-400">Area</p><p className="text-gray-700 font-medium">{vendor.area}, Moradabad</p></div>
+                    <div>
+                      <p className="text-xs text-gray-400">Location</p>
+                      <p className="text-gray-700 font-medium">
+                        {[categoryName, vendor.address, vendor.city, vendor.state, vendor.pin_code].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
