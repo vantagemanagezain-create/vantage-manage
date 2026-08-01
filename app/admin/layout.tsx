@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AdminLayout({
   children,
@@ -13,24 +13,34 @@ export default function AdminLayout({
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
+  const supabase = createClient();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+    let isMounted = true;
+
+    const syncSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsAdmin(!!session);
+      if (isMounted) {
+        setIsAdmin(!!session);
+      }
     };
-    checkSession();
-  }, []);
+
+    syncSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
+        setIsAdmin(!!session);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleLogout = async () => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    setIsAdmin(false);
     await supabase.auth.signOut();
     window.location.href = '/admin/login';
   };

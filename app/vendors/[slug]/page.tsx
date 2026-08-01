@@ -16,6 +16,9 @@ type Vendor = {
   description: string | null;
   profile_image: string | null;
   subscription_status: string | null;
+  city_id: string | null;
+  established_year: string | number | null;
+  gst_number: string | null;
   website: string | null;
   address: string | null;
   city: string | null;
@@ -58,6 +61,13 @@ export default function VendorDetailPage() {
     }
   }, [vendor]);
 
+  const buildExternalHref = (value: string | null | undefined) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    if (!trimmed) return null;
+    return trimmed.startsWith('http://') || trimmed.startsWith('https://') ? trimmed : `https://${trimmed}`;
+  };
+
   async function fetchVendor() {
     if (!slug) return;
 
@@ -67,7 +77,7 @@ export default function VendorDetailPage() {
     // Try using the browser Supabase client first.
     const { data, error } = await supabase
       .from('vendors')
-      .select('id, vendor_name, slug, owner_name, category_id, mobile_number, whatsapp_number, description, profile_image, subscription_status')
+      .select('id, vendor_name, slug, owner_name, category_id, mobile_number, whatsapp_number, area, address, city, state, pin_code, description, profile_image, subscription_status, city_id, established_year, gst_number, website, facebook, instagram, linkedin, youtube')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -78,7 +88,7 @@ export default function VendorDetailPage() {
     // still render vendor data without depending on the auth refresh flow.
     if (!vendorData || error) {
       try {
-        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/vendors?select=id,vendor_name,slug,owner_name,category_id,mobile_number,whatsapp_number,description,profile_image,subscription_status&slug=eq.${encodeURIComponent(
+        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/vendors?select=id,vendor_name,slug,owner_name,category_id,mobile_number,whatsapp_number,area,address,city,state,pin_code,description,profile_image,subscription_status,city_id,established_year,gst_number,website,facebook,instagram,linkedin,youtube&slug=eq.${encodeURIComponent(
           slug
         )}`;
         const res = await fetch(url, {
@@ -192,32 +202,71 @@ export default function VendorDetailPage() {
                     <div><p className="text-xs text-gray-400">Owner</p><p className="text-gray-700 font-medium">{vendor.owner_name}</p></div>
                   </div>
                 )}
-                {(vendor.address || vendor.city || vendor.state || vendor.pin_code || categoryName) && (
+                {(vendor.address || vendor.city || vendor.state || vendor.pin_code || categoryName || vendor.established_year) && (
                   <div className="flex items-center gap-3">
                     <MapPin size={16} className="text-gray-400" />
                     <div>
                       <p className="text-xs text-gray-400">Location</p>
                       <p className="text-gray-700 font-medium">
-                        {[categoryName, vendor.address, vendor.city, vendor.state, vendor.pin_code].filter(Boolean).join(', ')}
+                        {[vendor.address, vendor.city, vendor.state, vendor.pin_code].filter(Boolean).join(', ')}
                       </p>
+                      {vendor.established_year && (
+                        <p className="text-sm text-gray-600 mt-1">Established Year: {vendor.established_year}</p>
+                      )}
+                      {vendor.gst_number && (
+                        <p className="text-sm text-gray-600 mt-1">GST Number: {vendor.gst_number}</p>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               {vendor.mobile_number && (
-                <a href={`tel:${vendor.mobile_number}`} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
+                <a href={`tel:${vendor.mobile_number}`} className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
                   <Phone size={18} /> Call Now
                 </a>
               )}
               {vendor.whatsapp_number && (
-                <a href={`https://wa.me/91${vendor.whatsapp_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors">
+                <a href={`https://wa.me/91${String(vendor.whatsapp_number).replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors">
                   <MessageCircle size={18} /> WhatsApp
                 </a>
               )}
             </div>
+
+            {(vendor.website || vendor.facebook || vendor.instagram || vendor.linkedin || vendor.youtube) && (
+              <div>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Website & Social</h2>
+                <div className="flex flex-wrap gap-2">
+                  {buildExternalHref(vendor.website) && (
+                    <a href={buildExternalHref(vendor.website)!} target="_blank" rel="noopener noreferrer" className="rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Website
+                    </a>
+                  )}
+                  {buildExternalHref(vendor.facebook) && (
+                    <a href={buildExternalHref(vendor.facebook)!} target="_blank" rel="noopener noreferrer" className="rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Facebook
+                    </a>
+                  )}
+                  {buildExternalHref(vendor.instagram) && (
+                    <a href={buildExternalHref(vendor.instagram)!} target="_blank" rel="noopener noreferrer" className="rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Instagram
+                    </a>
+                  )}
+                  {buildExternalHref(vendor.linkedin) && (
+                    <a href={buildExternalHref(vendor.linkedin)!} target="_blank" rel="noopener noreferrer" className="rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      LinkedIn
+                    </a>
+                  )}
+                  {buildExternalHref(vendor.youtube) && (
+                    <a href={buildExternalHref(vendor.youtube)!} target="_blank" rel="noopener noreferrer" className="rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      YouTube
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

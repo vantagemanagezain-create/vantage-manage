@@ -103,6 +103,13 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-2 text-sm bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Profile
+            </Link>
+            <Link
               href={`/vendors/${vendor.slug}`}
               className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
             >

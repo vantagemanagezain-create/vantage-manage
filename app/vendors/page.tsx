@@ -33,11 +33,14 @@ function VendorsContent() {
     fetchVendors();
   }, []);
   const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(false);
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Avoid calling getSession() here to prevent an unnecessary refresh request
+    // (which can surface an "Invalid Refresh Token" error in the browser).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsVendorLoggedIn(!!session);
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -157,12 +160,24 @@ function VendorsContent() {
                     <MapPin size={12} /> {vendor.area}
                   </div>
                   <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
-                    <a href={`tel:${vendor.mobile_number}`} className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-xs py-1.5 rounded-lg hover:bg-blue-700">
-                      <Phone size={14} /> Call
-                    </a>
-                    <a href={`https://wa.me/91${vendor.whatsapp_number.replace(/\D/g, '')}`} className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600">
-                      <MessageCircle size={14} /> WhatsApp
-                    </a>
+                    {vendor.mobile_number && (
+                      <button
+                        type="button"
+                        onClick={() => (window.location.href = `tel:${vendor.mobile_number}`)}
+                        className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-xs py-1.5 rounded-lg hover:bg-blue-700"
+                      >
+                        <Phone size={14} /> Call
+                      </button>
+                    )}
+                    {vendor.whatsapp_number && (
+                      <button
+                        type="button"
+                        onClick={() => window.open(`https://wa.me/91${vendor.whatsapp_number.replace(/\D/g, '')}`, '_blank')}
+                        className="flex-1 flex items-center justify-center gap-1 bg-green-500 text-white text-xs py-1.5 rounded-lg hover:bg-green-600"
+                      >
+                        <MessageCircle size={14} /> WhatsApp
+                      </button>
+                    )}
                   </div>
                 </div>
               </Link>
