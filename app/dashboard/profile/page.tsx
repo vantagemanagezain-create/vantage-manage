@@ -1,220 +1,583 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Save, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Copy, Camera, Save } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
-type Category = { id: string; name: string };
+type Category = {
+  id: string;
+  name: string;
+};
 
-const INPUT_CLASS = 'w-full bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 mb-1';
+type ToastState = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
 
-export default function EditProfilePage() {
-  const router = useRouter();
+type FormState = {
+  businessName: string;
+  categoryId: string;
+  description: string;
+  establishedYear: string;
+  gstNumber: string;
+  contactPerson: string;
+  mobileNumber: string;
+  whatsappNumber: string;
+  website: string;
+  area: string;
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  facebook: string;
+  instagram: string;
+  linkedin: string;
+  youtube: string;
+  slug: string;
+};
+
+const sanitizeTextValue = (value: unknown): string => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+
+  return String(value).trim();
+};
+
+export default function VendorProfilePage() {
   const supabase = createClient();
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [vendorId, setVendorId] = useState('');
-
-  const [form, setForm] = useState({
-    vendor_name: '',
-    owner_name: '',
-    category_id: '',
-    mobile_number: '',
-    whatsapp_number: '',
-    email: '',
-    area: '',
-    address: '',
-    state: '',
+  const [toast, setToast] = useState<ToastState>(null);
+  const [vendorId, setVendorId] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [form, setForm] = useState<FormState>({
+    businessName: '',
+    categoryId: '',
     description: '',
+    establishedYear: '',
+    gstNumber: '',
+    contactPerson: '',
+    mobileNumber: '',
+    whatsappNumber: '',
+    website: '',
+    address: '',
+    city: '',
+    state: '',
+    pinCode: '',
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    youtube: '',
+    slug: '',
   });
 
   useEffect(() => {
-    fetchCategories();
-    fetchVendor();
-  }, []);
+    const loadData = async () => {
+      setLoading(true);
+      setToast(null);
 
-  async function fetchCategories() {
-    const { data } = await supabase.from('categories').select('id, name').order('name');
-    if (data) setCategories(data);
-  }
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
 
-  async function fetchVendor() {
-    setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !session.user) {
-      router.push('/login');
-      return;
-    }
-    const { data, error: fetchError } = await supabase
-      .from('vendors')
-      .select('id, vendor_name, owner_name, category_id, mobile_number, whatsapp_number, email, area, address, state, description')
-      .eq('user_id', session.user.id)
-      .single();
+      if (!userEmail) {
+        setToast({ type: 'error', message: 'Please log in to edit your profile.' });
+        setLoading(false);
+        return;
+      }
 
-    if (fetchError || !data) {
-      setError('Vendor profile not found.');
+      setEmail(userEmail);
+
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name');
+
+      if (categoriesData) {
+        setCategories(categoriesData as Category[]);
+      }
+
+      const { data: vendorData, error: vendorError } = await supabase
+        .from('vendors')
+        .select(
+          'id, vendor_name, owner_name, category_id, mobile_number, whatsapp_number, email, area, address, city, state, pin_code, description, established_year, gst_number, website, facebook, instagram, linkedin, youtube, slug'
+        )
+        .eq('email', userEmail)
+        .single();
+
+      if (vendorError || !vendorData) {
+        setToast({ type: 'error', message: 'Unable to load your profile.' });
+        setLoading(false);
+        return;
+      }
+
+      const record = vendorData as Record<string, unknown>;
+      setVendorId(record.id as string);
+      setForm({
+        businessName: sanitizeTextValue(record.vendor_name),
+        categoryId: sanitizeTextValue(record.category_id),
+        description: sanitizeTextValue(record.description),
+        establishedYear: sanitizeTextValue(record.established_year),
+        gstNumber: sanitizeTextValue(record.gst_number),
+        contactPerson: sanitizeTextValue(record.owner_name),
+        mobileNumber: sanitizeTextValue(record.mobile_number),
+        whatsappNumber: sanitizeTextValue(record.whatsapp_number),
+        website: sanitizeTextValue(record.website),
+        area: sanitizeTextValue(record.area),
+        address: sanitizeTextValue(record.address),
+        city: sanitizeTextValue(record.city),
+        state: sanitizeTextValue(record.state),
+        pinCode: sanitizeTextValue(record.pin_code),
+        facebook: sanitizeTextValue(record.facebook),
+        instagram: sanitizeTextValue(record.instagram),
+        linkedin: sanitizeTextValue(record.linkedin),
+        youtube: sanitizeTextValue(record.youtube),
+        slug: sanitizeTextValue(record.slug),
+      });
       setLoading(false);
-      return;
-    }
+    };
 
-    setVendorId(data.id);
-    setForm({
-      vendor_name: data.vendor_name || '',
-      owner_name: data.owner_name || '',
-      category_id: data.category_id || '',
-      mobile_number: data.mobile_number || '',
-      whatsapp_number: data.whatsapp_number || '',
-      email: data.email || '',
-      area: data.area || '',
-      address: data.address || '',
-      state: data.state || '',
-      description: data.description || '',
-    });
-    setLoading(false);
-  }
+    loadData();
+  }, [supabase]);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-  }
+  };
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError('');
-    setSuccess(false);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !session.user) {
-      router.push('/login');
+    if (!form.businessName.trim() || !form.categoryId || !form.mobileNumber.trim()) {
+      setToast({ type: 'error', message: 'Business name, category, and mobile number are required.' });
       return;
     }
 
-    const { error: saveError } = await supabase
-      .from('vendors')
-      .update({
-        vendor_name: form.vendor_name,
-        owner_name: form.owner_name,
-        category_id: form.category_id || null,
-        mobile_number: form.mobile_number,
-        whatsapp_number: form.whatsapp_number,
-        email: form.email,
-        area: form.area,
-        address: form.address,
-        state: form.state,
-        description: form.description,
-      })
-      .eq('user_id', session.user.id);
-
-    setSaving(false);
-
-    if (saveError) {
-      setError('Save failed: ' + saveError.message);
-    } else {
-      setSuccess(true);
-      setTimeout(() => router.push('/dashboard'), 1200);
+    if (!vendorId) {
+      setToast({ type: 'error', message: 'Vendor profile could not be found.' });
+      return;
     }
-  }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading your profile...</p>
-      </div>
-    );
-  }
+    setSaving(true);
+    setToast(null);
+
+    const updatePayload: Record<string, string | number | null> = {
+      vendor_name: sanitizeTextValue(form.businessName) || null,
+      slug: sanitizeTextValue(form.slug) || null,
+      owner_name: sanitizeTextValue(form.contactPerson) || null,
+      description: sanitizeTextValue(form.description) || null,
+      category_id: form.categoryId || null,
+      mobile_number: sanitizeTextValue(form.mobileNumber) || null,
+      whatsapp_number: sanitizeTextValue(form.whatsappNumber) || null,
+      area: sanitizeTextValue(form.area) || null,
+      address: sanitizeTextValue(form.address) || null,
+      city: sanitizeTextValue(form.city) || null,
+      state: sanitizeTextValue(form.state) || null,
+      pin_code: sanitizeTextValue(form.pinCode) || null,
+      gst_number: sanitizeTextValue(form.gstNumber) || null,
+      website: sanitizeTextValue(form.website) || null,
+      facebook: sanitizeTextValue(form.facebook) || null,
+      instagram: sanitizeTextValue(form.instagram) || null,
+      linkedin: sanitizeTextValue(form.linkedin) || null,
+      youtube: sanitizeTextValue(form.youtube) || null,
+      established_year: null,
+    };
+
+    const trimmedYear = sanitizeTextValue(form.establishedYear);
+    if (trimmedYear) {
+      const parsedYear = Number.parseInt(trimmedYear, 10);
+      if (Number.isNaN(parsedYear)) {
+        setToast({ type: 'error', message: 'Established year must be a valid integer year.' });
+        setSaving(false);
+        return;
+      }
+      updatePayload.established_year = parsedYear;
+    }
+
+    try {
+      const debugWindow = window as Window & typeof globalThis & {
+        __lastSaveDebug?: { vendorId: string | null; updatePayload: Record<string, string | number | null> };
+        __lastSaveResult?: unknown;
+      };
+
+      debugWindow.__lastSaveDebug = { vendorId, updatePayload };
+      console.log('vendorId:', vendorId);
+      console.log('updatePayload:', updatePayload);
+
+      const result = await supabase
+        .from('vendors')
+        .update(updatePayload)
+        .eq('id', vendorId)
+        .select();
+
+      debugWindow.__lastSaveResult = result;
+      console.log('UPDATE result:', result);
+      console.log('result.data:', result.data);
+      console.log('result.error:', result.error);
+      console.log('result.count:', result.count);
+
+      if (result.error) {
+        setToast({ type: 'error', message: result.error.message || 'Failed to save profile.' });
+      } else {
+        setToast({ type: 'success', message: 'Profile updated successfully.' });
+      }
+    } catch (error) {
+      console.error('Profile save failed:', error);
+      setToast({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred while saving your profile.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+      <div className="max-w-6xl mx-auto px-4 py-6 lg:px-6">
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Edit Profile</h1>
-            <p className="text-sm text-gray-500">Update your business information</p>
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mb-3">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
+            <p className="text-sm text-gray-500 mt-1">Update your business information and public profile details.</p>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-2xl mx-auto p-4">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm">
-            <CheckCircle className="w-4 h-4" />
-            Profile updated successfully! Redirecting...
+        {toast && (
+          <div className={`mb-6 rounded-xl border px-4 py-3 text-sm ${toast.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+            {toast.message}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-          <div>
-            <label className={LABEL_CLASS}>Business Name *</label>
-            <input name="vendor_name" value={form.vendor_name} onChange={handleChange} required className={INPUT_CLASS} placeholder="e.g. City Electrical" />
+        {loading ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+            Loading your profile...
           </div>
-          <div>
-            <label className={LABEL_CLASS}>Owner Name</label>
-            <input name="owner_name" value={form.owner_name} onChange={handleChange} className={INPUT_CLASS} placeholder="Owner full name" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Category</label>
-            <select name="category_id" value={form.category_id} onChange={handleChange} className={INPUT_CLASS}>
-              <option value="">-- Select Category --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Mobile Number</label>
-            <input name="mobile_number" value={form.mobile_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>WhatsApp Number</label>
-            <input name="whatsapp_number" value={form.whatsapp_number} onChange={handleChange} className={INPUT_CLASS} placeholder="9XXXXXXXXX" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Email</label>
-            <input type="email" name="email" value={form.email} onChange={handleChange} className={INPUT_CLASS} placeholder="you@example.com" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Area</label>
-            <input name="area" value={form.area} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Cantonment" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Address</label>
-            <input name="address" value={form.address} onChange={handleChange} className={INPUT_CLASS} placeholder="Full address" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>State</label>
-            <input name="state" value={form.state} onChange={handleChange} className={INPUT_CLASS} placeholder="e.g. Uttar Pradesh" />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Description</label>
-            <textarea name="description" value={form.description} onChange={handleChange} rows={3} className={INPUT_CLASS} placeholder="Brief description of services" />
-          </div>
+        ) : (
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2 space-y-6">
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="px-6 py-5 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">Business Information</h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+                      <input
+                        type="text"
+                        name="businessName"
+                        value={form.businessName}
+                        onChange={handleChange}
+                        placeholder="Enter business name"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                      <select
+                        name="categoryId"
+                        value={form.categoryId}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      >
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
+                      <input
+                        type="text"
+                        name="establishedYear"
+                        value={form.establishedYear}
+                        onChange={handleChange}
+                        placeholder="e.g. 2018"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Business Description</label>
+                      <textarea
+                        rows={4}
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        placeholder="Describe your business"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">GST Number (optional)</label>
+                      <input
+                        type="text"
+                        name="gstNumber"
+                        value={form.gstNumber}
+                        onChange={handleChange}
+                        placeholder="Enter GST number"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                  </div>
+                </section>
 
-          <div className="pt-2 flex items-center gap-3">
-            <button type="submit" disabled={saving} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium disabled:opacity-50 transition-colors">
-              <Save className="w-4 h-4" />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-            <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-700">
-              Cancel
-            </Link>
-          </div>
-        </form>
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="px-6 py-5 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+                      <input
+                        type="text"
+                        name="contactPerson"
+                        value={form.contactPerson}
+                        onChange={handleChange}
+                        placeholder="Enter owner name"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+                      <input
+                        type="text"
+                        name="mobileNumber"
+                        value={form.mobileNumber}
+                        onChange={handleChange}
+                        placeholder="Enter mobile number"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                      <input
+                        type="text"
+                        name="whatsappNumber"
+                        value={form.whatsappNumber}
+                        onChange={handleChange}
+                        placeholder="Enter WhatsApp number"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        readOnly
+                        className="w-full rounded-xl border border-gray-300 bg-gray-100 px-4 py-3 text-sm text-gray-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                      <input
+                        type="text"
+                        name="website"
+                        value={form.website}
+                        onChange={handleChange}
+                        placeholder="https://example.com"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="px-6 py-5 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">Address</h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                      <input
+                        type="text"
+                        name="area"
+                        value={form.area}
+                        onChange={handleChange}
+                        placeholder="Enter area"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                      <textarea
+                        rows={3}
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                        placeholder="Enter full address"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        placeholder="Enter city"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        placeholder="Enter state"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
+                      <input
+                        type="text"
+                        name="pinCode"
+                        value={form.pinCode}
+                        onChange={handleChange}
+                        placeholder="Enter PIN code"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="px-6 py-5 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">Social Links</h2>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+                      <input
+                        type="text"
+                        name="facebook"
+                        value={form.facebook}
+                        onChange={handleChange}
+                        placeholder="https://facebook.com/"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                      <input
+                        type="text"
+                        name="instagram"
+                        value={form.instagram}
+                        onChange={handleChange}
+                        placeholder="https://instagram.com/"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+                      <input
+                        type="text"
+                        name="linkedin"
+                        value={form.linkedin}
+                        onChange={handleChange}
+                        placeholder="https://linkedin.com/"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">YouTube</label>
+                      <input
+                        type="text"
+                        name="youtube"
+                        value={form.youtube}
+                        onChange={handleChange}
+                        placeholder="https://youtube.com/"
+                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      />
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="space-y-6">
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">Images</h2>
+                    <p className="text-sm text-gray-500 mt-1">Add visuals for your business profile.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {[
+                      { title: 'Company Logo', helper: 'PNG, JPG, or WEBP' },
+                      { title: 'Workshop / Office Photo', helper: 'Recommended 1200x800' },
+                      { title: 'Product / Service Photo', helper: 'Show your best work' },
+                    ].map((item) => (
+                      <div key={item.title} className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-gray-900">{item.title}</h3>
+                          <Camera className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <div className="flex h-28 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400">
+                          <span className="text-sm">Preview</span>
+                        </div>
+                        <button
+                          type="button"
+                          disabled
+                          className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500"
+                        >
+                          Upload Image
+                        </button>
+                        <p className="mt-2 text-xs text-gray-500">Image upload will be implemented in next step.</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-gray-900">Profile URL</h2>
+                  <p className="text-sm text-gray-500 mt-1">Share your public profile link.</p>
+                  <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                    <p className="text-sm text-gray-700 break-all">https://vantagemanage.com/vendors/{form.slug || 'vendor-slug'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="mt-4 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copy Link
+                  </button>
+                </section>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
