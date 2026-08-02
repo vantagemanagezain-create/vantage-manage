@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Copy, Camera, Save } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -34,6 +34,7 @@ type FormState = {
   instagram: string;
   linkedin: string;
   youtube: string;
+  profileImage: string;
   slug: string;
 };
 
@@ -61,6 +62,10 @@ export default function VendorProfilePage() {
   const [toast, setToast] = useState<ToastState>(null);
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [email, setEmail] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState('');
+  const profileImageObjectUrl = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState<FormState>({
     businessName: '',
     categoryId: '',
@@ -79,6 +84,7 @@ export default function VendorProfilePage() {
     instagram: '',
     linkedin: '',
     youtube: '',
+    profileImage: '',
     slug: '',
   });
 
@@ -110,7 +116,7 @@ export default function VendorProfilePage() {
       const { data: vendorData, error: vendorError } = await supabase
         .from('vendors')
         .select(
-          'id, vendor_name, owner_name, category_id, mobile_number, whatsapp_number, email, area, address, city, state, pin_code, description, established_year, gst_number, website, facebook, instagram, linkedin, youtube, slug'
+          'id, vendor_name, owner_name, category_id, mobile_number, whatsapp_number, email, area, address, city, state, pin_code, description, established_year, gst_number, website, facebook, instagram, linkedin, youtube, profile_image, slug'
         )
         .eq('email', userEmail)
         .single();
@@ -142,8 +148,12 @@ export default function VendorProfilePage() {
         instagram: sanitizeTextValue(record.instagram),
         linkedin: sanitizeTextValue(record.linkedin),
         youtube: sanitizeTextValue(record.youtube),
+        profileImage: sanitizeTextValue(record.profile_image),
         slug: sanitizeTextValue(record.slug),
       });
+      if (record.profile_image) {
+        setProfileImagePreview(String(record.profile_image));
+      }
       setLoading(false);
     };
 
@@ -154,6 +164,40 @@ export default function VendorProfilePage() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setToast({ type: 'error', message: 'Please select a JPG, PNG, or WEBP image.' });
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setToast({ type: 'error', message: 'Image must be 5MB or smaller.' });
+      return;
+    }
+
+    if (profileImageObjectUrl.current) {
+      URL.revokeObjectURL(profileImageObjectUrl.current);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    profileImageObjectUrl.current = previewUrl;
+    setProfileImageFile(file);
+    setProfileImagePreview(previewUrl);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (profileImageObjectUrl.current) {
+        URL.revokeObjectURL(profileImageObjectUrl.current);
+      }
+    };
+  }, []);
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -190,8 +234,33 @@ export default function VendorProfilePage() {
       instagram: sanitizeTextValue(form.instagram) || null,
       linkedin: sanitizeTextValue(form.linkedin) || null,
       youtube: sanitizeTextValue(form.youtube) || null,
+      profile_image: sanitizeTextValue(form.profileImage) || null,
       established_year: null,
     };
+
+    async function uploadSelectedImage() {
+      if (!profileImageFile || !vendorId) return form.profileImage || null;
+
+      const ext = profileImageFile.name.split('.').pop();
+      const fileName = `vendor-${vendorId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('vendor-images')
+        .upload(fileName, profileImageFile, { upsert: true });
+
+      if (uploadError) {
+        return Promise.reject(uploadError.message);
+      }
+
+      const { data: urlData, error: urlError } = supabase.storage
+        .from('vendor-images')
+        .getPublicUrl(fileName);
+
+      if (urlError || !urlData?.publicUrl) {
+        return Promise.reject(urlError?.message || 'Failed to get uploaded image URL.');
+      }
+
+      return urlData.publicUrl;
+    }
 
     const trimmedYear = sanitizeTextValue(form.establishedYear);
     if (trimmedYear) {
@@ -205,14 +274,16 @@ export default function VendorProfilePage() {
     }
 
     try {
-      const debugWindow = window as Window & typeof globalThis & {
-        __lastSaveDebug?: { vendorId: string | null; updatePayload: Record<string, string | number | null> };
-        __lastSaveResult?: unknown;
-      };
-
-      debugWindow.__lastSaveDebug = { vendorId, updatePayload };
-      console.log('vendorId:', vendorId);
-      console.log('updatePayload:', updatePayload);
+      if (profileImageFile) {
+        try {
+          const uploadedUrl = await uploadSelectedImage();
+          updatePayload.profile_image = uploadedUrl;
+        } catch (uploadError) {
+          setToast({ type: 'error', message: String(uploadError) });
+          setSaving(false);
+          return;
+        }
+      }
 
       const result = await supabase
         .from('vendors')
@@ -220,15 +291,17 @@ export default function VendorProfilePage() {
         .eq('id', vendorId)
         .select();
 
-      debugWindow.__lastSaveResult = result;
-      console.log('UPDATE result:', result);
-      console.log('result.data:', result.data);
-      console.log('result.error:', result.error);
-      console.log('result.count:', result.count);
-
       if (result.error) {
         setToast({ type: 'error', message: result.error.message || 'Failed to save profile.' });
       } else {
+        const updatedUrl = updatePayload.profile_image ? String(updatePayload.profile_image) : form.profileImage;
+        setForm((prev) => ({ ...prev, profileImage: updatedUrl }));
+        setProfileImagePreview(updatedUrl || '');
+        setProfileImageFile(null);
+        if (profileImageObjectUrl.current) {
+          URL.revokeObjectURL(profileImageObjectUrl.current);
+          profileImageObjectUrl.current = null;
+        }
         setToast({ type: 'success', message: 'Profile updated successfully.' });
       }
     } catch (error) {
@@ -518,34 +591,38 @@ export default function VendorProfilePage() {
               <div className="space-y-6">
                 <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">Images</h2>
-                    <p className="text-sm text-gray-500 mt-1">Add visuals for your business profile.</p>
+                    <h2 className="text-lg font-semibold text-gray-900">Business Profile Image</h2>
+                    <p className="text-sm text-gray-500 mt-1">Upload a profile image for your public vendor page.</p>
                   </div>
 
                   <div className="space-y-4">
-                    {[
-                      { title: 'Company Logo', helper: 'PNG, JPG, or WEBP' },
-                      { title: 'Workshop / Office Photo', helper: 'Recommended 1200x800' },
-                      { title: 'Product / Service Photo', helper: 'Show your best work' },
-                    ].map((item) => (
-                      <div key={item.title} className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-sm font-semibold text-gray-900">{item.title}</h3>
-                          <Camera className="w-4 h-4 text-gray-400" />
-                        </div>
-                        <div className="flex h-28 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400">
-                          <span className="text-sm">Preview</span>
-                        </div>
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                      <div className="h-40 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center">
+                        {profileImagePreview ? (
+                          <img src={profileImagePreview} alt="Profile preview" className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-sm text-gray-500">No profile image selected</span>
+                        )}
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between gap-3">
                         <button
                           type="button"
-                          disabled
-                          className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
-                          Upload Image
+                          Choose Image
                         </button>
-                        <p className="mt-2 text-xs text-gray-500">Image upload will be implemented in next step.</p>
+                        <p className="text-xs text-gray-500">JPG, PNG or WEBP — Max 5MB</p>
                       </div>
-                    ))}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleImageChange}
+                        className="sr-only"
+                      />
+                    </div>
                   </div>
                 </section>
 
