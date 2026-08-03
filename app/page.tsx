@@ -127,21 +127,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
 
-      {/* HERO BANNER - Ticker */}
-      <div className="flex justify-center py-2 bg-transparent">
-          {headerAd ? (
-            <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex justify-center">
-              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="w-full max-w-[380px] md:max-w-[450px] h-auto mx-auto block" />}
-              {!headerAd.image_url && <span className="font-semibold">{headerAd.title}</span>}
-            </a>
-          ) : (
-            <>Vantage Manage — Moradabad's Fastest Growing Business Directory •{' '}
-            <Link href="/register-business" className="underline font-semibold">Register Your Business</Link>{' '}
-            •{' '}
-            <Link href="/vendors" className="underline">Browse Directory</Link></>
-          )}
-      </div>
-
       {/* TOP NAV */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
         <div className="flex items-center gap-2">
@@ -178,6 +163,20 @@ export default function HomePage() {
         </form>
         <p className="text-gray-500 text-xs mt-4">{totalCount}+ businesses listed</p>
       </section>
+
+      <div className="flex justify-center py-2 bg-transparent px-4">
+          {headerAd ? (
+            <a href={headerAd.target_url} target="_blank" rel="noopener noreferrer" className="flex justify-center">
+              {headerAd.image_url && <img src={headerAd.image_url} alt={headerAd.title} className="w-full max-w-[380px] md:max-w-[450px] h-auto mx-auto block" />}
+              {!headerAd.image_url && <span className="font-semibold">{headerAd.title}</span>}
+            </a>
+          ) : (
+            <>Vantage Manage — Moradabad's Fastest Growing Business Directory •{' '}
+            <Link href="/register-business" className="underline font-semibold">Register Your Business</Link>{' '}
+            •{' '}
+            <Link href="/vendors" className="underline">Browse Directory</Link></>
+          )}
+      </div>
 
       {/* CATEGORIES */}
       {categories.length > 0 && (
