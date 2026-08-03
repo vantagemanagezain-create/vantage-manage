@@ -80,6 +80,12 @@ export default function AdminLayout({
           >
             Advertisements
           </Link>
+          <Link
+            href="/admin/settings"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            Settings
+          </Link>
         </nav>
         {isAdmin && (
           <div className="p-3 border-t border-gray-800">

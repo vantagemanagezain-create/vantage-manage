@@ -34,6 +34,24 @@ starts_at: string;
   expires_at: string;
 };
 
+type PlatformContactSettings = {
+  public_email: string;
+  public_phone: string;
+  public_whatsapp: string;
+  advertisement_email: string;
+  advertisement_phone: string;
+  advertisement_whatsapp: string;
+};
+
+const fallbackContactSettings: PlatformContactSettings = {
+  public_email: 'vantagemanageofficial@gmail.com',
+  public_phone: '+91 92591 80235',
+  public_whatsapp: '919259180235',
+  advertisement_email: 'vantagemanageofficial@gmail.com',
+  advertisement_phone: '+91 92591 80235',
+  advertisement_whatsapp: '919259180235',
+};
+
 export default function HomePage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -41,6 +59,7 @@ export default function HomePage() {
   const [totalCount, setTotalCount] = useState(0);
     const [ads, setAds] = useState<Advertisement[]>([]);
   const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(false);
+  const [contactSettings, setContactSettings] = useState<PlatformContactSettings>(fallbackContactSettings);
   const supabase = createClient();
 
   useEffect(() => {
@@ -48,6 +67,7 @@ export default function HomePage() {
     fetchCategories();
     fetchTotalCount();
     fetchAds();
+    void fetchContactSettings();
   }, []);
 
   useEffect(() => {
@@ -110,6 +130,55 @@ export default function HomePage() {
       .lte('starts_at', today)
       .gte('expires_at', today);
     if (data) setAds(data);
+  }
+
+  async function fetchContactSettings() {
+    try {
+      const { data, error } = await supabase
+        .from('platform_contact_settings')
+        .select('public_email, public_phone, public_whatsapp, advertisement_email, advertisement_phone, advertisement_whatsapp')
+        .eq('id', 'global')
+        .single();
+
+      if (error || !data) {
+        setContactSettings(fallbackContactSettings);
+        return;
+      }
+
+      setContactSettings({
+        public_email: data.public_email || fallbackContactSettings.public_email,
+        public_phone: data.public_phone || fallbackContactSettings.public_phone,
+        public_whatsapp: data.public_whatsapp || fallbackContactSettings.public_whatsapp,
+        advertisement_email: data.advertisement_email || fallbackContactSettings.advertisement_email,
+        advertisement_phone: data.advertisement_phone || fallbackContactSettings.advertisement_phone,
+        advertisement_whatsapp: data.advertisement_whatsapp || fallbackContactSettings.advertisement_whatsapp,
+      });
+    } catch {
+      setContactSettings(fallbackContactSettings);
+    }
+  }
+
+  function formatPhoneDisplay(value: string) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+    }
+
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`;
+    }
+
+    return value.trim();
+  }
+
+  function buildTelHref(value: string) {
+    const sanitized = value.trim().replace(/[^\d+]/g, '');
+    return `tel:${sanitized}`;
+  }
+
+  function buildWhatsAppHref(value: string) {
+    const sanitized = value.trim().replace(/[^\d+]/g, '').replace(/^\+/, '');
+    return `https://wa.me/${sanitized}`;
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -213,7 +282,7 @@ export default function HomePage() {
         <h2 className="text-base font-bold mb-2">Your Business Could Be Here</h2>
         <p className="text-xs mb-3 opacity-90">Promote your business on the homepage of Moradabad’s fastest growing business directory.</p>
         <a
-          href="https://wa.me/919259180235?text=Hi%2C%20I%20want%20to%20advertise%20on%20Vantage%20Manage%20homepage"
+          href={`${buildWhatsAppHref(contactSettings.advertisement_whatsapp)}?text=${encodeURIComponent('Hi, I want to advertise on Vantage Manage homepage')}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-white text-orange-600 font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-orange-50"
@@ -280,17 +349,17 @@ export default function HomePage() {
         <h3 className="text-xl font-bold mb-2">Contact Vantage Manage</h3>
         <p className="text-gray-400 text-sm mb-4">Connecting manufacturers, suppliers, exporters and service providers across Moradabad.</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="tel:+919259180235" className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-full text-sm">
+          <a href={buildTelHref(contactSettings.public_phone)} className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-full text-sm">
             <Phone className="w-4 h-4 text-blue-400" />
-            +91 92591 80235
+            {formatPhoneDisplay(contactSettings.public_phone)}
           </a>
-          <a href="https://wa.me/919259180235" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-900 hover:bg-green-800 px-5 py-2.5 rounded-full text-sm">
+          <a href={buildWhatsAppHref(contactSettings.public_whatsapp)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-900 hover:bg-green-800 px-5 py-2.5 rounded-full text-sm">
             <MessageCircle className="w-4 h-4 text-green-400" />
             WhatsApp
           </a>
-          <a href="mailto:vantagemanageofficial@gmail.com" className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-full text-sm">
+          <a href={`mailto:${contactSettings.public_email}`} className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-full text-sm">
             <Mail className="w-4 h-4 text-blue-400" />
-            vantagemanageofficial@gmail.com
+            {contactSettings.public_email}
           </a>
         </div>
       </section>
