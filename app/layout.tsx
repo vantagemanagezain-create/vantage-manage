@@ -6,6 +6,9 @@ export const metadata: Metadata = {
     default: 'Moradabad Business Directory | Vantage Manage',
     template: '%s | Vantage Manage',
   },
+  icons: {
+    icon: '/vantage-icon.png',
+  },
   description:
     'Find local vendors, shops and businesses in Moradabad, Uttar Pradesh. Connect directly via call or WhatsApp.',
   keywords: [

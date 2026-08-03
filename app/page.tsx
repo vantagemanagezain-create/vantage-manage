@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { Store, ArrowRight, MapPin, Search, Phone, MessageCircle, Building2, Tag, Mail } from 'lucide-react';
+import { ArrowRight, MapPin, Search, Phone, MessageCircle, Building2, Tag, Mail } from 'lucide-react';
 
 type Vendor = {
   id: string;
@@ -145,7 +145,11 @@ export default function HomePage() {
       {/* TOP NAV */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
         <div className="flex items-center gap-2">
-          <Store className="w-6 h-6 text-blue-500" />
+          <img
+            src="/LOGO%20Final.png"
+            alt="Vantage Manage logo"
+            className="w-6 h-6 object-contain"
+          />
           <span className="font-bold text-lg">Vantage Manage</span>
         </div>
         <div className="flex items-center gap-4 text-sm text-gray-400">
