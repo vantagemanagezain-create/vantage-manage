@@ -6,9 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Store, ArrowLeft, LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
-  const [loginType, setLoginType] = useState<'email' | 'mobile'>('email');
-  const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,18 +19,22 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      let authEmail = email;
-      if (loginType === 'mobile') {
+      // Determine whether identifier is an email or mobile number
+      let authEmail = identifier;
+      if (!identifier.includes('@')) {
+        // Treat as mobile number: lookup vendor email by mobile_number
         const { data: vendorData, error: vendorError } = await supabase
           .from('vendors')
           .select('email')
-          .eq('mobile_number', mobile.trim())
+          .eq('mobile_number', identifier.trim())
           .single();
         if (vendorError || !vendorData) {
           throw new Error('Invalid email/mobile number or password.');
         }
         authEmail = vendorData.email;
       }
+
+      // Always authenticate via email/password (no phone auth)
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: authEmail,
         password,
@@ -65,29 +67,17 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Vendor Login</h2>
 
-          <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-6">
-            <button
-              type="button"
-              onClick={() => { setLoginType('email'); setError(''); }}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'email'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              Email
-            </button>
-            <button
-              type="button"
-              onClick={() => { setLoginType('mobile'); setError(''); }}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                loginType === 'mobile'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              Mobile Number
-            </button>
+          {/* Single identifier field: Email or Mobile Number */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email or Mobile Number</label>
+            <input
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              placeholder="Enter your email or mobile number"
+              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -97,33 +87,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {loginType === 'email' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <input
-                  type="tel"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                  required
-                  autoComplete="tel"
-                  placeholder="e.g. 9876543210"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            )}
+            {/* Identifier input above is used for both email and mobile login */}
 
             <div>
               <div className="flex items-center justify-between mb-1">

@@ -33,15 +33,31 @@ export default function DashboardPage() {
       return;
     }
     const user = session.user;
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('vendors')
       .select('id, vendor_name, owner_name, email, mobile_number, area, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, slug')
-      .eq('email', user.email)
+      .eq('user_id', user.id)
       .single();
+
     if (error || !data) {
+      if (user.email) {
+        const { data: legacyData, error: legacyError } = await supabase
+          .from('vendors')
+          .select('id, vendor_name, owner_name, email, mobile_number, area, subscription_status, subscription_plan, subscription_start, subscription_end, payment_status, slug')
+          .eq('email', user.email)
+          .single();
+
+        if (!legacyError && legacyData) {
+          setVendor(legacyData as Vendor);
+          setLoading(false);
+          return;
+        }
+      }
+
       router.push('/login');
       return;
     }
+
     setVendor(data as Vendor);
     setLoading(false);
   };
